@@ -38,10 +38,10 @@ describe("println", () => {
 
     expect(spyLog).toHaveBeenCalledWith(
       "[Tree depth]",
-      "\x1b[34mNode\x1b[39m(\n" +
+      "\x1b[36mNode\x1b[39m(\n" +
         "  \x1b[33m1\x1b[39m,\n" +
-        "  \x1b[34mNode\x1b[39m(\x1b[33m2\x1b[39m, \x1b[34mNode\x1b[39m(\x1b[33m3\x1b[39m, \x1b[34mEmpty\x1b[39m, \x1b[34mEmpty\x1b[39m), \x1b[34mEmpty\x1b[39m),\n" +
-        "  \x1b[34mNode\x1b[39m(\x1b[33m4\x1b[39m, \x1b[34mEmpty\x1b[39m, \x1b[34mNode\x1b[39m(\x1b[33m3\x1b[39m, \x1b[34mEmpty\x1b[39m, \x1b[34mEmpty\x1b[39m)),\n" +
+        "  \x1b[36mNode\x1b[39m(\x1b[33m2\x1b[39m, \x1b[36mNode\x1b[39m(\x1b[33m3\x1b[39m, \x1b[36mEmpty\x1b[39m, \x1b[36mEmpty\x1b[39m), \x1b[36mEmpty\x1b[39m),\n" +
+        "  \x1b[36mNode\x1b[39m(\x1b[33m4\x1b[39m, \x1b[36mEmpty\x1b[39m, \x1b[36mNode\x1b[39m(\x1b[33m3\x1b[39m, \x1b[36mEmpty\x1b[39m, \x1b[36mEmpty\x1b[39m)),\n" +
         ")",
       "\x1b[33m3\x1b[39m",
     );

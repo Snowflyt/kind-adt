@@ -102,7 +102,7 @@ export function show(value: unknown, options: ShowOptions = {}): string {
             fields.length ?
               variant(
                 sequence([
-                  text(c.blue(val._tag) + "("),
+                  text(c.cyan(val._tag) + "("),
                   ...flatMap(fields, (field, i, arr) =>
                     i === arr.length - 1 ? expand(field) : [expand(field), text(", ")],
                   ),
@@ -111,20 +111,20 @@ export function show(value: unknown, options: ShowOptions = {}): string {
                 body.type === "text" ?
                   between(
                     fields.map((field) => pair(expand(field), text(","))),
-                    text(c.blue(val._tag) + "("),
+                    text(c.cyan(val._tag) + "("),
                     text(")"),
                   )
                 : pair(
                     between(
                       fields.map((field) => pair(expand(field), text(","))),
-                      text(c.blue(val._tag) + "("),
+                      text(c.cyan(val._tag) + "("),
                       text(") "),
                     ),
                     body,
                   ),
               )
-            : body.type === "text" ? text(c.blue(val._tag))
-            : pair(text(c.blue(val._tag) + " "), body)
+            : body.type === "text" ? text(c.cyan(val._tag))
+            : pair(text(c.cyan(val._tag) + " "), body)
           );
         },
       }),

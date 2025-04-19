@@ -27,10 +27,10 @@ import { type Data, make } from "kind-adt";
 import type { Arg0, HKT } from "hkt-core";
 
 // Define an ADT
-export type Option<T> = Data<
-  Some: [value: T],
-  None: [],
->;
+export type Option<T> = Data<{
+  Some: [value: T];
+  None: [];
+}>;
 
 // Generate constructors and match functions for the ADT
 export const { Some, None, match } = make<OptionHKT>();
@@ -75,10 +75,10 @@ npm install kind-adt
 ```typescript
 import type { Data } from "kind-adt";
 
-export type Option<T> = Data<
-  Some: [T],
-  None: [],
->;
+export type Option<T> = Data<{
+  Some: [value: T];
+  None: [];
+}>;
 // Expands to:
 // export type Option<T> =
 //   | { readonly _tag: "Some"; readonly _0: T }
@@ -232,10 +232,10 @@ You can extract the type of each variant of an ADT using the `Tagged` utility ty
 ```typescript
 import type { Data, Tagged } from "kind-adt";
 
-type Option<T> = Data<
-  Some: [T],
-  None: [],
->;
+type Option<T> = Data<{
+  Some: [value: T];
+  None: [];
+}>;
 
 type Some<T> = Extract<Option<T>, Tagged<"Some">>;
 // Expands to:
@@ -255,10 +255,10 @@ type None = Extract<Option<unknown>, Tagged<"None">>;
 Let’s revisit the `Option<T>` example in the quickstart section.
 
 ```typescript
-type Option<T> = Data<
-  Some: [T],
-  None: [],
->;
+type Option<T> = Data<{
+  Some: [value: T];
+  None: [];
+}>;
 
 const Option = make<OptionHKT>();
 interface OptionHKT extends HKT {
@@ -294,15 +294,15 @@ function Option.match<T, R>(adt: Option<T>, cases: {
 This also applies to other ADTs, such as `Result`, `Either`, etc.
 
 ```typescript
-type Result<T, E> = Data<
-  Ok: [value: T],
-  Err: [error: E],
->;
+type Result<T, E> = Data<{
+  Ok: [value: T];
+  Err: [error: E];
+}>;
 
-type Either<A, B> = Data<
-  Left: [value: A],
-  Right: [value: B],
->;
+type Either<A, B> = Data<{
+  Left: [value: A];
+  Right: [value: B];
+}>;
 ```
 
 ### Syntax sugar for ADTs with only one object field

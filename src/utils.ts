@@ -1,6 +1,7 @@
 import type { ShowOptions } from "showify";
 import { Node as SerializerNode, serializer, show as stringify } from "showify";
 
+import type { Tagged } from ".";
 import { unwrap } from ".";
 
 const { between, pair, sequence, text, variant } = SerializerNode;
@@ -70,7 +71,7 @@ export function show(value: unknown, options: ShowOptions = {}): string {
     ...options,
     serializers: [
       serializer({
-        if: (value, { omittedKeys }): value is { _tag: Capitalize<string> } =>
+        if: (value, { omittedKeys }): value is Tagged =>
           "_tag" in value &&
           typeof value._tag === "string" &&
           // Detect if `_tag` is already omitted to avoid infinite recursion

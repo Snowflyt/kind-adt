@@ -24,19 +24,22 @@ export function make(variants) {
     }, `unwrap${tag}`);
 
   /* Constructor */
-  const createConstructor = (tag) =>
-    Object.assign(
+  const createConstructor = (tag) => {
+    const result = Object.create(PipeableProto);
+    result._tag = tag;
+    result.toJSON = () => ({ _tag: tag });
+    result[Symbol.for("nodejs.util.inspect.custom")] = () => ({ _tag: tag });
+
+    return Object.assign(
       renameFunction((...args) => {
-        const result = { _tag: tag };
+        const result = Object.create(PipeableProto);
+        result._tag = tag;
         for (let i = 0; i < args.length; i++) result["_" + i] = args[i];
         return result;
       }, tag),
-      {
-        _tag: tag,
-        toJSON: () => ({ _tag: tag }),
-        [Symbol.for("nodejs.util.inspect.custom")]: () => ({ _tag: tag }),
-      },
+      result,
     );
+  };
 
   const result = {
     unwrap:
@@ -321,4 +324,39 @@ const stringify = (value) => {
   };
 
   return serialize(value, []);
+};
+
+export const PipeableProto = {
+  pipe(...fs) {
+    // Optimization inspired by Effect
+    // https://github.com/Effect-TS/effect/blob/f293e97ab2a26f45586de106b85119c5d98ab4c7/packages/effect/src/Pipeable.ts#L491-L524
+    switch (fs.length) {
+      case 0:
+        return this;
+      case 1:
+        return fs[0](this);
+      case 2:
+        return fs[1](fs[0](this));
+      case 3:
+        return fs[2](fs[1](fs[0](this)));
+      case 4:
+        return fs[3](fs[2](fs[1](fs[0](this))));
+      case 5:
+        return fs[4](fs[3](fs[2](fs[1](fs[0](this)))));
+      case 6:
+        return fs[5](fs[4](fs[3](fs[2](fs[1](fs[0](this))))));
+      case 7:
+        return fs[6](fs[5](fs[4](fs[3](fs[2](fs[1](fs[0](this)))))));
+      case 8:
+        return fs[7](fs[6](fs[5](fs[4](fs[3](fs[2](fs[1](fs[0](this))))))));
+      case 9:
+        return fs[8](fs[7](fs[6](fs[5](fs[4](fs[3](fs[2](fs[1](fs[0](this)))))))));
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        let result = this;
+        for (const f of fs) result = f(result);
+        return result;
+      }
+    }
+  },
 };

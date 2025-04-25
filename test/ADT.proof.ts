@@ -2,7 +2,7 @@ import { pipe } from "effect";
 import type { Arg0, Arg1, HKT, HKT2 } from "hkt-core";
 import { describe, equal, expect, it } from "typroof";
 
-import type { Data, Tagged } from "../src";
+import type { Data, Pipeable, Tagged } from "../src";
 import { make, unwrap } from "../src";
 
 describe("Data", () => {
@@ -16,19 +16,23 @@ describe("Data", () => {
     type V6 = Extract<IpAddr, Tagged<"V6">>;
 
     expect<V4>().to(
-      equal<{
-        readonly _tag: "V4";
-        readonly _0: number;
-        readonly _1: number;
-        readonly _2: number;
-        readonly _3: number;
-      }>,
+      equal<
+        {
+          readonly _tag: "V4";
+          readonly _0: number;
+          readonly _1: number;
+          readonly _2: number;
+          readonly _3: number;
+        } & Pipeable
+      >,
     );
     expect<V6>().to(
-      equal<{
-        readonly _tag: "V6";
-        readonly _0: string;
-      }>,
+      equal<
+        {
+          readonly _tag: "V6";
+          readonly _0: string;
+        } & Pipeable
+      >,
     );
     expect<IpAddr>().to(equal<V4 | V6>);
   });
@@ -43,15 +47,19 @@ describe("Data", () => {
     type None = Extract<Option<unknown>, Tagged<"None">>;
 
     expect<Some<number>>().to(
-      equal<{
-        readonly _tag: "Some";
-        readonly _0: number;
-      }>,
+      equal<
+        {
+          readonly _tag: "Some";
+          readonly _0: number;
+        } & Pipeable
+      >,
     );
     expect<None>().to(
-      equal<{
-        readonly _tag: "None";
-      }>,
+      equal<
+        {
+          readonly _tag: "None";
+        } & Pipeable
+      >,
     );
     expect<Option<number>>().to(equal<Some<number> | None>);
   });
@@ -66,19 +74,23 @@ describe("Data", () => {
     type Node<T> = Extract<Tree<T>, Tagged<"Node">>;
 
     expect<Empty>().to(
-      equal<{
-        readonly _tag: "Empty";
-      }>,
+      equal<
+        {
+          readonly _tag: "Empty";
+        } & Pipeable
+      >,
     );
     expect<Node<number>>().to(
-      equal<{
-        readonly _tag: "Node";
-        readonly _0: {
-          value: number;
-          left: Tree<number>;
-          right: Tree<number>;
-        };
-      }>,
+      equal<
+        {
+          readonly _tag: "Node";
+          readonly _0: {
+            value: number;
+            left: Tree<number>;
+            right: Tree<number>;
+          };
+        } & Pipeable
+      >,
     );
     expect<Tree<number>>().to(equal<Empty | Node<number>>);
   });
@@ -94,17 +106,21 @@ describe("Data", () => {
       type Node<T> = Extract<Tree<T>, Tagged<"Node">>;
 
       expect<Empty>().to(
-        equal<{
-          readonly _tag: "Empty";
-        }>,
+        equal<
+          {
+            readonly _tag: "Empty";
+          } & Pipeable
+        >,
       );
       expect<Node<number>>().to(
-        equal<{
-          readonly _tag: "Node";
-          readonly _0: number;
-          readonly _1: Tree<number>;
-          readonly _2: Tree<number>;
-        }>,
+        equal<
+          {
+            readonly _tag: "Node";
+            readonly _0: number;
+            readonly _1: Tree<number>;
+            readonly _2: Tree<number>;
+          } & Pipeable
+        >,
       );
       expect<Tree<number>>().to(equal<Empty | Node<number>>);
     }
@@ -124,17 +140,21 @@ describe("Data", () => {
       type Node<T> = Extract<Tree<T>, Tagged<"Node">>;
 
       expect<Empty>().to(
-        equal<{
-          readonly _tag: "Empty";
-        }>,
+        equal<
+          {
+            readonly _tag: "Empty";
+          } & Pipeable
+        >,
       );
       expect<Node<number>>().to(
-        equal<{
-          readonly _tag: "Node";
-          readonly _0: number;
-          readonly _1: Tree<number>;
-          readonly _2: Tree<number>;
-        }>,
+        equal<
+          {
+            readonly _tag: "Node";
+            readonly _0: number;
+            readonly _1: Tree<number>;
+            readonly _2: Tree<number>;
+          } & Pipeable
+        >,
       );
       expect<Tree<number>>().to(equal<Empty | Node<number>>);
     }
@@ -197,17 +217,13 @@ describe("ADT.<Tag>", () => {
 
     expect(IpAddr.V4).to(
       equal<
-        { readonly _tag: "V4" } & ((
-          args_0: number,
-          args_1: number,
-          args_2: number,
-          args_3: number,
-        ) => IpAddr)
+        { readonly _tag: "V4" } & Pipeable &
+          ((args_0: number, args_1: number, args_2: number, args_3: number) => IpAddr)
       >,
     );
     expect(IpAddr.V4(127, 0, 0, 1)).to(equal<IpAddr>);
 
-    expect(IpAddr.V6).to(equal<{ readonly _tag: "V6" } & ((args_0: string) => IpAddr)>);
+    expect(IpAddr.V6).to(equal<{ readonly _tag: "V6" } & Pipeable & ((args_0: string) => IpAddr)>);
     expect(IpAddr.V6("::1")).to(equal<IpAddr>);
   });
 
@@ -222,10 +238,14 @@ describe("ADT.<Tag>", () => {
       return: Option<Arg0<this>>;
     }
 
-    expect(Option.Some).to(equal<{ readonly _tag: "Some" } & (<T = never>(value: T) => Option<T>)>);
+    expect(Option.Some).to(
+      equal<{ readonly _tag: "Some" } & Pipeable & (<T = never>(value: T) => Option<T>)>,
+    );
     expect(Option.Some(42)).to(equal<Option<number>>);
 
-    expect(Option.None).to(equal<{ readonly _tag: "None" } & (<T = never>() => Option<T>)>);
+    expect(Option.None).to(
+      equal<{ readonly _tag: "None" } & Pipeable & (<T = never>() => Option<T>)>,
+    );
     expect(Option.None()).to(equal<Option<never>>);
     expect(Option.None<number>()).to(equal<Option<number>>);
   });

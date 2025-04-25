@@ -33,6 +33,60 @@ describe("ADT.<Tag>", () => {
     expect(Option.None._tag).toBe("None");
     expect(Option.None()).toEqual({ _tag: "None" });
   });
+
+  it("should generate constructors that creates pipeable ADTs", () => {
+    type Result<T, E> = Data<{
+      Ok: [value: T];
+      Err: [error: E];
+    }>;
+
+    const Result = make<ResultHKT>(["Ok", "Err"]);
+    interface ResultHKT extends HKT2 {
+      return: Result<Arg0<this>, Arg1<this>>;
+    }
+
+    expect(Result.Ok(42).pipe()).toEqual({ _tag: "Ok", _0: 42 });
+    expect(Result.Ok(42).pipe((res) => res._tag)).toBe("Ok");
+    expect(
+      Result.Ok(42).pipe(
+        (res) => res._0,
+        (n) => n * 2,
+      ),
+    ).toBe(84);
+
+    const add1 = (n: number) => n + 1;
+    for (let i = 0; i < 10; i++)
+      expect(
+        Result.Ok(0).pipe((res) => res._0, ...(Array.from({ length: i }, () => add1) as [])),
+      ).toBe(i);
+
+    type Option<T> = Data<{
+      Some: [value: T];
+      None: [];
+    }>;
+
+    const { None, Some, match } = make<OptionHKT>();
+    interface OptionHKT extends HKT {
+      return: Option<Arg0<this>>;
+    }
+
+    const map: <T, R>(fn: (value: T) => R) => (opt: Option<T>) => Option<R> = (fn) =>
+      match({
+        Some: (value) => Some(fn(value)),
+        None: () => None,
+      });
+
+    let value: number | null = null;
+    Some(42).pipe(
+      map((n) => n + 1),
+      map((n) => n * 2),
+      match({
+        Some: (n) => (value = n),
+        None: () => {},
+      }),
+    );
+    expect(value).toBe(86);
+  });
 });
 
 describe("unwrap", () => {

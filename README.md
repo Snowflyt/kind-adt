@@ -48,13 +48,14 @@ function safeDivide(n: number, d: number) {
 match(safeDivide(42, 2), {
   Some: (n) => console.log("Result:", n),
   None: () => console.log("Division by zero!"),
-});
+});
 ```
 
 ## Features
 
 - _One_ type to define your **A**lgebraic **D**ata **T**ype (`Data`).
 - _One_ function to create **constructors**, **deconstructors**, **type guards** and **pattern matching function** for your ADT with **type safety** (`make`).
+- Support for **functional pipelines** with a [`.pipe()` method](#functional-pipelines-with-pipe) on all ADTs.
 - [**Readable type signatures**](#provide-more-readable-type-signatures) for your ADT with _labeled tuples_.
 - [**Recursive ADTs**](#recursive-adts) with ease.
 - Tiny footprint (~1kB minzipped).
@@ -197,6 +198,8 @@ pipe(
 ); // => 84
 ```
 
+See also the [functional pipelines with `.pipe()`](#functional-pipelines-with-pipe) section for details on kind-adt’s built-in alternative to external pipe utilities.
+
 Note that `ADT.match` requires the return type of each case to be the same. To allow different return types, you can use the `ADT.matchW` function, where the `W` suffix stands for _wider_. `ADT.matchW` can be used the same way as `ADT.match`, supporting both curried and non-curried overloads.
 
 <div align="right">
@@ -248,6 +251,60 @@ type None = Extract<Option<unknown>, Tagged<"None">>;
 // type None = {
 //   readonly _tag: "None"
 // }
+```
+
+### Functional pipelines with `.pipe()`
+
+Every ADT in kind-adt supports a `.pipe()` method, allowing for a more functional and fluent style of programming similar to libraries like [Effect](https://github.com/Effect-TS/effect) or [RxJS](https://rxjs.dev/api/index/function/pipe).
+
+```typescript
+import { type Data, make } from "kind-adt";
+import type { Arg0, HKT } from "hkt-core";
+
+type Option<T> = Data<{
+  Some: [value: T];
+  None: [];
+}>;
+
+const { Some, None, match } = make<OptionHKT>();
+interface OptionHKT extends HKT {
+  return: Option<Arg0<this>>;
+}
+
+const map: <T, R>(fn: (value: T) => R) => (opt: Option<T>) => Option<R> = (fn) =>
+  match({
+    Some: (value) => Some(fn(value)),
+    None: () => None,
+  });
+
+// Using pipe with an ADT
+Some(42).pipe(
+  map((n) => n + 1),
+  map((n) => n * 2),
+  match({
+    Some: (n) => console.log("Result:", n),
+    None: () => console.log("No value"),
+  }),
+);
+//> Result: 86
+```
+
+Under the hood, any value returned by a constructor already has a `.pipe()` method, which takes a sequence of functions and applies them one after another, with each function receiving the result of the previous function.
+
+You can also create your own objects with the same `.pipe()` functionality using the exported `Pipeable` interface and `PipeableProto`:
+
+```typescript
+import { type Pipeable, PipeableProto } from "kind-adt";
+
+// Create a pipeable object
+const myData = Object.create(PipeableProto);
+myData.value = 42;
+
+// Use the pipe method
+const result = myData.pipe(
+  (obj) => obj.value * 2,
+  (n) => n.toString(),
+); // => "84"
 ```
 
 ### Provide more readable type signatures

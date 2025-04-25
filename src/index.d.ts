@@ -1294,7 +1294,7 @@ type HKTParams<F> =
  * type _1 = TolerantResult<OptionHKT>; // => Option<unknown>
  * ```
  */
-export type TolerantResult<F extends TypeLambda> =
+type TolerantResult<F extends TypeLambda> =
   HKTParams<F> extends infer Params extends unknown[] ?
     ApplyHKT<
       F,
@@ -1330,3 +1330,6 @@ type _CheckVariance<Lower, Upper> =
     : "covariant"
   : [Upper] extends [Lower] ? "contravariant"
   : "invariant";
+
+/* Ensure TypeScript treats this file as a module to prevent internal from exportation */
+export {};

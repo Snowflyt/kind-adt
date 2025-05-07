@@ -24,22 +24,23 @@ export function make(variants) {
     }, `unwrap${tag}`);
 
   /* Constructor */
-  const createConstructor = (tag) => {
-    const result = Object.create(PipeableProto);
-    result._tag = tag;
-    result.toJSON = () => ({ _tag: tag });
-    result[Symbol.for("nodejs.util.inspect.custom")] = () => ({ _tag: tag });
-
-    return Object.assign(
-      renameFunction((...args) => {
-        const result = Object.create(PipeableProto);
-        result._tag = tag;
-        for (let i = 0; i < args.length; i++) result["_" + i] = args[i];
-        return result;
-      }, tag),
-      result,
+  const createConstructor = (tag) =>
+    Object.setPrototypeOf(
+      Object.assign(
+        renameFunction((...args) => {
+          const result = Object.create(PipeableProto);
+          result._tag = tag;
+          for (let i = 0; i < args.length; i++) result["_" + i] = args[i];
+          return result;
+        }, tag),
+        {
+          _tag: tag,
+          toJSON: () => ({ _tag: tag }),
+          [Symbol.for("nodejs.util.inspect.custom")]: () => ({ _tag: tag }),
+        },
+      ),
+      PipeableFunctionProto,
     );
-  };
 
   const result = {
     unwrap:
@@ -360,3 +361,7 @@ export const PipeableProto = {
     }
   },
 };
+
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const PipeableFunctionProto = { pipe: PipeableProto.pipe };
+Object.setPrototypeOf(PipeableFunctionProto, Function.prototype);

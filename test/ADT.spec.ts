@@ -86,6 +86,17 @@ describe("ADT.<Tag>", () => {
       }),
     );
     expect(value).toBe(86);
+    value = null;
+
+    (None as Option<number>).pipe(
+      map((n) => n + 1),
+      map((n) => n * 2),
+      match({
+        Some: (n) => (value = n),
+        None: () => (value = 42),
+      }),
+    );
+    expect(value).toBe(42);
   });
 });
 

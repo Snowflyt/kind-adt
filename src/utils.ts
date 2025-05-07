@@ -31,7 +31,8 @@ const { between, pair, sequence, text, variant } = SerializerNode;
  * @see {@linkcode show} if you want more control over the output.
  */
 export function println(...args: unknown[]) {
-  getConsole().log(
+  // @ts-expect-error - `console` is not in JavaScript spec
+  console.log(
     ...args.map((arg) => (typeof arg === "string" ? arg : show(arg, { colors: true, indent: 2 }))),
   );
 }
@@ -152,20 +153,3 @@ const flatMap = <T, U>(arr: T[], fn: (value: T, index: number, array: T[]) => U 
   }
   return result;
 };
-
-// `console` is not standard in JavaScript. Though rare, it is possible that `console` is not
-// available in some environments. We use a proxy to handle this case and ignore errors if `console`
-// is not available.
-const getConsole = (() => {
-  let cachedConsole: any = undefined;
-  return () => {
-    if (cachedConsole !== undefined) return cachedConsole;
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-implied-eval
-      cachedConsole = new Function("return console")();
-    } catch {
-      cachedConsole = null;
-    }
-    return cachedConsole;
-  };
-})();

@@ -29,8 +29,5 @@
     "declaration": true
   },
   "include": ["src/**/*"],
-  "exclude": ["src/**/*.proof.ts", "src/**/*.spec.ts", "src/**/*.bench.ts"],
-  "tsc-alias": {
-    "resolveFullPaths": true
-  }
+  "exclude": ["src/**/*.proof.ts", "src/**/*.spec.ts", "src/**/*.bench.ts"]
 }

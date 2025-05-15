@@ -58,8 +58,8 @@ match(safeDivide(42, 2), {
 - Support for **functional pipelines** with a [`.pipe()` method](#functional-pipelines-with-pipe) on all ADTs.
 - [**Readable type signatures**](#provide-more-readable-type-signatures) for your ADT with _labeled tuples_.
 - [**Recursive ADTs**](#recursive-adts) with ease.
-- Tiny footprint (~1kB minzipped).
-- Debug your ADTs with [optional utilities](#optional-utilities) ([`println`](#println) and [`show`](#show)) from `kind-adt/utils`.
+- Tiny footprint (~2kB minzipped).
+- Convert your ADTs to human-readable strings with [showify](https://github.com/Snowflyt/showify) integration.
 
 ## Installation
 
@@ -95,7 +95,7 @@ You can create **constructors**, **deconstructors** and **type guards** using th
 
 ```typescript
 import { make } from "kind-adt";
-import { println } from "kind-adt/utils";
+import { show } from "showify"; // Optional dependency
 import type { Arg0, HKT } from "hkt-core";
 
 export const { Some, None, match: matchOption, isSome, ifSome /* ... */ } = make<OptionHKT>();
@@ -106,8 +106,9 @@ interface OptionHKT extends HKT {
 Some(42); // => { _tag: "Some", _0: 42 }
 // ^?: <number>(args_0: number) => Option<number>
 
-// Use `println` to print the ADT in a readable format
-println(Some(42)); // Some(42)
+// Use `show` from showify to print the ADT in a readable format
+console.log(show(Some(42), { indent: 2, trailingComma: "auto", colors: true }));
+// Some(42)
 ```
 
 <details>
@@ -123,9 +124,6 @@ export const IpAddr = make<IpAddr>();
 
 IpAddr.V4(127, 0, 0, 1); // => { _tag: "V4", _0: 127, _1: 0, _2: 0, _3: 1 }
 IpAddr.V6("::1"); // => { _tag: "V6", _0: "::1" }
-
-println(IpAddr.V4(127, 0, 0, 1)); // V4(127, 0, 0, 1)
-println(IpAddr.V6("::1")); // V6("::1")
 ```
 
 </details>
@@ -224,7 +222,7 @@ matchOption(Some(42), {
 - Check out the [syntax sugar for ADTs with only one object field](#syntax-sugar-for-adts-with-only-one-object-field) and [recursive ADTs](#recursive-adts).
 - See how to [check the type of an ADT with **type guards** and extract the fields with **`unwrap`**](#type-guards-and-unwrap).
 - Check out the [conditional deconstructors](#conditional-deconstructors-if) if you are tired with using `match` on a single variant with a verbose catch-all case.
-- See how to use [optional utilities](#optional-utilities) like `println` and `show` to debug your ADTs with ease.
+- See how to use [showify](#convert-adts-to-human-readable-strings) to convert your ADTs to human-readable strings.
 
 ## Recipes
 
@@ -560,18 +558,20 @@ const result = Option.ifSome(
 );
 ```
 
-## Optional Utilities
+### Convert ADTs to human-readable strings
 
-> [!NOTE]
->
-> To use the `println` and `show` utilities, the [showify](https://github.com/Snowflyt/showify) package is required to be installed.
+kind-adt provides integration with the [showify](https://github.com/Snowflyt/showify) package, which allows you to convert objects to human-readable strings. This is especially useful for debugging and logging purposes.
 
-### `println`
+To use this feature, you need to install the [showify](https://github.com/Snowflyt/showify) package:
 
-You can use the `println` function to print an ADT in a readable format, which is especially useful for debugging.
+```shell
+npm install showify
+```
 
-```typescript
-import { println } from "kind-adt/utils";
+Then you can use the `show` function to convert an ADT to a human-readable string.
+
+```javascript
+import { show } from "showify";
 
 // Suppose we have an ADT `data Tree<T> = Empty | Node(T, Tree<T>, Tree<T>)`
 const tree = Tree.Node(
@@ -580,8 +580,8 @@ const tree = Tree.Node(
   Tree.Node(4, Tree.Empty, Tree.Node(3, Tree.Empty, Tree.Empty)),
 );
 
-// ANSI colors are supported
-println(tree);
+// Print the ADT with ANSI colors and indented format
+console.log(show(tree, { indent: 2, trailingComma: "auto", colors: true }));
 // Node(
 //   1,
 //   Node(2, Node(3, Empty, Empty), Empty),
@@ -589,31 +589,18 @@ println(tree);
 // )
 ```
 
-Check out [`show`](#show) if you want more control over the output.
+If you find it tedious to write `console.log(show(...))` every time, you can create a utility function to print the ADT directly:
 
-### `show`
+```javascript
+import { show } from "showify";
 
-The `println` utility uses the [showify](https://github.com/Snowflyt/showify) package to convert an ADT into a string. Since `println` accepts variadic arguments, it does not support passing options to control the output. If you want more control over the output, you can use the `show` function to convert an ADT into a string, which accepts an optional `ShowOptions` object from the showify package to control the output.
-
-```typescript
-import { show } from "kind-adt/utils";
-
-// Suppose we have an ADT `data Tree<T> = Empty | Node(T, Tree<T>, Tree<T>)`
-const tree = Tree.Node(1, Tree.Node(2, Tree.Empty, Tree.Empty), Tree.Empty);
-
-console.log(show(tree));
-// Node(1, Node(2, Empty, Empty), Empty)
-
-console.log(show(tree, { indent: 4, breakLength: 0, trailingComma: "auto" }));
-// Node(
-//     1,
-//     Node(
-//         2,
-//         Empty,
-//         Empty,
-//     ),
-//     Empty,
-// )
+export function println(...args: unknown[]) {
+  console.log(
+    ...args.map((arg) =>
+      typeof arg === "string" ? arg : show(arg, { colors: true, trailingComma: "true", indent: 2 }),
+    ),
+  );
+}
 ```
 
 ## FAQ

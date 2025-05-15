@@ -28,7 +28,7 @@ export function make(variants) {
     Object.setPrototypeOf(
       Object.assign(
         renameFunction((...args) => {
-          const result = Object.create(PipeableProto);
+          const result = Object.create(ADTProto);
           result._tag = tag;
           for (let i = 0; i < args.length; i++) result["_" + i] = args[i];
           return result;
@@ -39,7 +39,7 @@ export function make(variants) {
           [Symbol.for("nodejs.util.inspect.custom")]: () => ({ _tag: tag }),
         },
       ),
-      PipeableFunctionProto,
+      ADTConstructorProto,
     );
 
   const result = {
@@ -221,6 +221,22 @@ function matchesPrefix(str, prefix) {
  * Common utility functions *
  ****************************/
 /**
+ * A polyfill for `Array#flatMap` to support pre ES2019 environments.
+ * @param arr The array to flatten.
+ * @param fn The function to call on each element of the array.
+ * @returns
+ */
+function flatMap(arr, fn) {
+  const result = [];
+  for (let i = 0; i < arr.length; i++) {
+    const value = fn(arr[i], i, arr);
+    if (Array.isArray(value)) Array.prototype.push.apply(result, value);
+    else result.push(value);
+  }
+  return result;
+}
+
+/**
  * Get the entries of an object.
  * @private
  *
@@ -310,7 +326,7 @@ const stringify = (value) => {
       const objectEntries = Reflect.ownKeys(value)
         .map((key) => {
           const keyDisplay =
-            typeof key === "symbol" ? `[${key.toString()}]`
+            typeof key === "symbol" ? key.toString()
             : identifierRegex.test(key) ? key
             : JSON.stringify(key);
           const val = value[key];
@@ -326,6 +342,70 @@ const stringify = (value) => {
 
   return serialize(value, []);
 };
+
+/**
+ * Custom inspect function for ADT to interact with the
+ * [showify](https://github.com/Snowflyt/showify) package.
+ * @returns
+ */
+function inspect({ ancestors, c, level }, expand) {
+  const fields = unwrap(this);
+  const fieldKeys = fields.map((_, i) => `_${i}`);
+
+  let body = expand(this, {
+    level,
+    omittedKeys: new Set([
+      "_tag",
+      ...fieldKeys,
+      "toJSON",
+      Symbol.for("nodejs.util.inspect.custom"),
+      Symbol.for("showify.inspect.custom"),
+    ]),
+    ancestors,
+  });
+  if (
+    body.type === "sequence" &&
+    body.values[0].type === "text" &&
+    body.values[0].value.startsWith("[Function")
+  ) {
+    body.values[2].ref = body.ref;
+    body = body.values[2];
+  }
+
+  return (
+    fields.length ?
+      variant(
+        sequence([
+          text(c.cyan(this._tag) + "("),
+          ...flatMap(fields, (field, i, arr) =>
+            i === arr.length - 1 ? expand(field) : [expand(field), text(", ")],
+          ),
+          ...(body.type === "text" ? [text(")")] : [text(") "), body]),
+        ]),
+        body.type === "text" ?
+          between(
+            fields.map((field) => pair(expand(field), text(","))),
+            text(c.cyan(this._tag) + "("),
+            text(")"),
+          )
+        : pair(
+            between(
+              fields.map((field) => pair(expand(field), text(","))),
+              text(c.cyan(this._tag) + "("),
+              text(") "),
+            ),
+            body,
+          ),
+      )
+    : body.type === "text" ? text(c.cyan(this._tag))
+    : pair(text(c.cyan(this._tag) + " "), body)
+  );
+}
+const text = (value) => ({ type: "text", value });
+const variant = (inline, wrap) => ({ type: "variant", inline, wrap });
+const sequence = (values) => ({ type: "sequence", values });
+const pair = (left, right) => sequence([left, right]);
+const between = (values, open, close) => ({ type: "between", values, open, close });
 
 export const PipeableProto = {
   pipe(...fs) {
@@ -362,6 +442,10 @@ export const PipeableProto = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
-const PipeableFunctionProto = { pipe: PipeableProto.pipe };
-Object.setPrototypeOf(PipeableFunctionProto, Function.prototype);
+const ADTProto = {
+  ...PipeableProto,
+  [Symbol.for("showify.inspect.custom")]: inspect,
+};
+
+const ADTConstructorProto = { ...ADTProto };
+Object.setPrototypeOf(ADTConstructorProto, Function.prototype);

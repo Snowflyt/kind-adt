@@ -1,5 +1,8 @@
+import type { Arg0, HKT } from "hkt-core";
+import { show } from "showify";
 import { describe, expect, it } from "vitest";
 
+import type { Data } from "../src";
 import { make } from "../src";
 
 // This helper function extracts the result of `stringify` by triggering an error caused by
@@ -118,7 +121,7 @@ describe("stringify (internal implementation)", () => {
     // Symbol keys
     const symbolKey = Symbol("test");
     const objWithSymbol = { [symbolKey]: "value" };
-    expect(stringify(objWithSymbol)).toBe('{ [Symbol(test)]: "value" }');
+    expect(stringify(objWithSymbol)).toBe('{ Symbol(test): "value" }');
 
     // Valid identifier keys
     const objWithValidIds = { abc: 1, $valid: 2, _key123: 3 };
@@ -134,7 +137,7 @@ describe("stringify (internal implementation)", () => {
       "invalid-id": 2,
       [Symbol("sym")]: 3,
     };
-    expect(stringify(mixedObj)).toBe('{ validId: 1, "invalid-id": 2, [Symbol(sym)]: 3 }');
+    expect(stringify(mixedObj)).toBe('{ validId: 1, "invalid-id": 2, Symbol(sym): 3 }');
   });
 
   it("should handle Date objects correctly", () => {
@@ -200,5 +203,54 @@ describe("stringify (internal implementation)", () => {
         `map: Map(2) { "key" => { deep: Set(2) { 1, 2 } }, "self" => [Circular] }, ` +
         `date: ${date.toISOString()} }`,
     );
+  });
+});
+
+describe("show", () => {
+  it("should convert an ADT to a string", () => {
+    type Tree<T> = Data<{
+      Empty: [];
+      Node: {
+        __labels: [value: void, left: void, right: void];
+        0: T;
+        1: Tree<T>;
+        2: Tree<T>;
+      };
+    }>;
+
+    const Tree = make<TreeHKT>();
+    interface TreeHKT extends HKT {
+      return: Tree<Arg0<this>>;
+    }
+
+    const tree = Tree.Node(
+      1,
+      Tree.Node(2, Tree.Node(3, Tree.Empty, Tree.Empty), Tree.Empty),
+      Tree.Node(4, Tree.Empty, Tree.Node(3, Tree.Empty, Tree.Empty)),
+    );
+
+    expect(show(tree, { indent: 2, colors: true })).toEqual(
+      "\x1b[36mNode\x1b[39m(\n" +
+        "  \x1b[33m1\x1b[39m,\n" +
+        "  \x1b[36mNode\x1b[39m(\x1b[33m2\x1b[39m, \x1b[36mNode\x1b[39m(\x1b[33m3\x1b[39m, \x1b[36mEmpty\x1b[39m, \x1b[36mEmpty\x1b[39m), \x1b[36mEmpty\x1b[39m),\n" +
+        "  \x1b[36mNode\x1b[39m(\x1b[33m4\x1b[39m, \x1b[36mEmpty\x1b[39m, \x1b[36mNode\x1b[39m(\x1b[33m3\x1b[39m, \x1b[36mEmpty\x1b[39m, \x1b[36mEmpty\x1b[39m)),\n" +
+        ")",
+    );
+
+    type Option<T> = Data<{
+      Some: [value: T];
+      None: [];
+    }>;
+
+    const Option = make<OptionHKT>();
+    interface OptionHKT extends HKT {
+      return: Option<Arg0<this>>;
+    }
+
+    expect(show(Option.Some(42))).toBe("Some(42)");
+    expect(show(Option.None)).toBe("None");
+    expect(show(Option.None())).toBe("None");
+
+    expect(show(Object.assign(Option.None, { value: true }))).toBe("None { value: true }");
   });
 });

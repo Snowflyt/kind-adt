@@ -113,11 +113,88 @@ export interface Pipeable {
   // prettier-ignore
   pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never, R = never, S = never, T = never, U = never, V = never, W = never, X = never, Y = never, Z = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q, qr: (q: Q) => R, rs: (r: R) => S, st: (s: S) => T, tu: (t: T) => U, uv: (u: U) => V, vw: (v: V) => W, wx: (w: W) => X, xy: (x: X) => Y, yz: (y: Y) => Z): Z;
 }
-
-/**
- * The prototype to build a {@linkcode Pipeable} object.
- */
+/** The prototype to build a {@linkcode Pipeable} object. */
 export const PipeableProto: Pipeable;
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+export interface PipeableFunction extends Function {
+  /**
+   * Pipe the value through a series of functions.
+   *
+   * **Example**
+   *
+   * ```typescript
+   * import { type Data, make } from "kind-adt";
+   *
+   * type BoxNumber = Data<{
+   *   Box: [number];
+   * }>;
+   * const { Box } = make<BoxNumber>();
+   *
+   * Box(42).pipe((box) => box._0 + 1, (n) => n * 2, (n) => n.toString()); // => "86"
+   * ```
+   */
+  pipe<A>(this: A): A;
+  pipe<A, B = never>(this: A, ab: (a: A) => B): B;
+  // prettier-ignore
+  pipe<A, B = never, C = never>(this: A, ab: (a: A) => B, bc: (b: B) => C): C;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D): D;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E): E;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F): F;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G): G;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H): H;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I): I;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J): J;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K): K;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L): L;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M): M;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N): N;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O): O;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P): P;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q): Q;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never, R = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q, qr: (q: Q) => R): R;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never, R = never, S = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q, qr: (q: Q) => R, rs: (r: R) => S): S;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never, R = never, S = never, T = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q, qr: (q: Q) => R, rs: (r: R) => S, st: (s: S) => T): T;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never, R = never, S = never, T = never, U = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q, qr: (q: Q) => R, rs: (r: R) => S, st: (s: S) => T, tu: (t: T) => U): U;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never, R = never, S = never, T = never, U = never, V = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q, qr: (q: Q) => R, rs: (r: R) => S, st: (s: S) => T, tu: (t: T) => U, uv: (u: U) => V): V;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never, R = never, S = never, T = never, U = never, V = never, W = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q, qr: (q: Q) => R, rs: (r: R) => S, st: (s: S) => T, tu: (t: T) => U, uv: (u: U) => V, vw: (v: V) => W): W;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never, R = never, S = never, T = never, U = never, V = never, W = never, X = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q, qr: (q: Q) => R, rs: (r: R) => S, st: (s: S) => T, tu: (t: T) => U, uv: (u: U) => V, vw: (v: V) => W, wx: (w: W) => X): X;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never, R = never, S = never, T = never, U = never, V = never, W = never, X = never, Y = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q, qr: (q: Q) => R, rs: (r: R) => S, st: (s: S) => T, tu: (t: T) => U, uv: (u: U) => V, vw: (v: V) => W, wx: (w: W) => X, xy: (x: X) => Y): Y;
+  // prettier-ignore
+  pipe<A, B = never, C = never, D = never, E = never, F = never, G = never, H = never, I = never, J = never, K = never, L = never, M = never, N = never, O = never, P = never, Q = never, R = never, S = never, T = never, U = never, V = never, W = never, X = never, Y = never, Z = never>(this: A, ab: (a: A) => B, bc: (b: B) => C, cd: (c: C) => D, de: (d: D) => E, ef: (e: E) => F, fg: (f: F) => G, gh: (g: G) => H, hi: (h: H) => I, ij: (i: I) => J, jk: (j: J) => K, kl: (k: K) => L, lm: (l: L) => M, mn: (m: M) => N, no: (n: N) => O, op: (o: O) => P, pq: (p: P) => Q, qr: (q: Q) => R, rs: (r: R) => S, st: (s: S) => T, tu: (t: T) => U, uv: (u: U) => V, vw: (v: V) => W, wx: (w: W) => X, xy: (x: X) => Y, yz: (y: Y) => Z): Z;
+}
+/** The prototype to build a {@linkcode PipeableFunction}. */
+export const PipeableFunctionProto: PipeableFunction;
+
+export interface ADT extends Pipeable {}
+/** The prototype of ADTs. */
+export const ADTProto: ADT;
+
+export interface ADTConstructor extends PipeableFunction {}
+/** The prototype of ADT constructors. */
+export const ADTConstructorProto: ADTConstructor;
 
 /**************
  * Main types *
@@ -155,7 +232,7 @@ export type Tagged<Tag extends string = string, Fields = readonly unknown[]> = M
     { readonly [I in IndexOf<Fields> as `_${I}`]: Fields[I] }
   : never
 > &
-  Pipeable;
+  ADT;
 
 /**
  * Create an ADT with tagged types.
@@ -362,36 +439,35 @@ export type Constructor<Type extends Tagged | TypeLambda<never, Tagged>, Tag ext
   [Type] extends (
     [Tagged] // Non-generic ADT
   ) ?
-    { readonly _tag: Tag } & Pipeable &
-      ((...args: ExtractFields<Extract<Type, Tagged<Tag>>>) => Type)
+    { readonly _tag: Tag } & ADT & ((...args: ExtractFields<Extract<Type, Tagged<Tag>>>) => Type)
   : // Generic ADT
   Type extends TypeLambda<[never], unknown> ?
     unknown extends _UpperBound<HKTParams<Type>[0]> ?
-      { readonly _tag: Tag } & Pipeable &
+      { readonly _tag: Tag } & ADT &
         (<T = never>(
           ...args: ExtractFields<FilterTagged<ApplyHKT<Type, [T]>, Tag>>
         ) => ApplyHKT<Type, [T]>)
-    : { readonly _tag: Tag } & Pipeable &
+    : { readonly _tag: Tag } & ADT &
         (<T extends _UpperBound<HKTParams<Type>[0]> = never>(
           ...args: ExtractFields<FilterTagged<ApplyHKT<Type, [T]>, Tag>>
         ) => ApplyHKT<Type, [T]>)
   : Type extends TypeLambda<[never, never], unknown> ?
     [unknown, unknown] extends [_UpperBound<HKTParams<Type>[0]>, _UpperBound<HKTParams<Type>[1]>] ?
-      { readonly _tag: Tag } & Pipeable &
+      { readonly _tag: Tag } & ADT &
         (<T = never, U = never>(
           ...args: ExtractFields<FilterTagged<ApplyHKT<Type, [T, U]>, Tag>>
         ) => ApplyHKT<Type, [T, U]>)
     : unknown extends _UpperBound<HKTParams<Type>[0]> ?
-      { readonly _tag: Tag } & Pipeable &
+      { readonly _tag: Tag } & ADT &
         (<T = never, U extends _UpperBound<HKTParams<Type>[1]> = never>(
           ...args: ExtractFields<FilterTagged<ApplyHKT<Type, [T, U]>, Tag>>
         ) => ApplyHKT<Type, [T, U]>)
     : unknown extends _UpperBound<HKTParams<Type>[1]> ?
-      { readonly _tag: Tag } & Pipeable &
+      { readonly _tag: Tag } & ADT &
         (<T extends _UpperBound<HKTParams<Type>[0]> = never, U = never>(
           ...args: ExtractFields<FilterTagged<ApplyHKT<Type, [T, U]>, Tag>>
         ) => ApplyHKT<Type, [T, U]>)
-    : { readonly _tag: Tag } & Pipeable &
+    : { readonly _tag: Tag } & ADT &
         (<
           T extends _UpperBound<HKTParams<Type>[0]> = never,
           U extends _UpperBound<HKTParams<Type>[1]> = never,
@@ -399,7 +475,7 @@ export type Constructor<Type extends Tagged | TypeLambda<never, Tagged>, Tag ext
           ...args: ExtractFields<FilterTagged<ApplyHKT<Type, [T, U]>, Tag>>
         ) => ApplyHKT<Type, [T, U]>)
   : Type extends TypeLambda<[never, never, never], unknown> ?
-    { readonly _tag: Tag } & Pipeable &
+    { readonly _tag: Tag } & ADT &
       (<
         T extends _UpperBound<HKTParams<Type>[0]> = never,
         U extends _UpperBound<HKTParams<Type>[1]> = never,
@@ -408,7 +484,7 @@ export type Constructor<Type extends Tagged | TypeLambda<never, Tagged>, Tag ext
         ...args: ExtractFields<FilterTagged<ApplyHKT<Type, [T, U, V]>, Tag>>
       ) => ApplyHKT<Type, [T, U, V]>)
   : Type extends TypeLambda<[never, never, never, never], unknown> ?
-    { readonly _tag: Tag } & Pipeable &
+    { readonly _tag: Tag } & ADT &
       (<
         T extends _UpperBound<HKTParams<Type>[0]> = never,
         U extends _UpperBound<HKTParams<Type>[1]> = never,
@@ -418,7 +494,7 @@ export type Constructor<Type extends Tagged | TypeLambda<never, Tagged>, Tag ext
         ...args: ExtractFields<FilterTagged<ApplyHKT<Type, [T, U, V, W]>, Tag>>
       ) => ApplyHKT<Type, [T, U, V, W]>)
   : Type extends TypeLambda<[never, never, never, never, never], unknown> ?
-    { readonly _tag: Tag } & Pipeable &
+    { readonly _tag: Tag } & ADT &
       (<
         T extends _UpperBound<HKTParams<Type>[0]> = never,
         U extends _UpperBound<HKTParams<Type>[1]> = never,
@@ -429,7 +505,7 @@ export type Constructor<Type extends Tagged | TypeLambda<never, Tagged>, Tag ext
         ...args: ExtractFields<FilterTagged<ApplyHKT<Type, [T, U, V, W, X]>, Tag>>
       ) => ApplyHKT<Type, [T, U, V, W, X]>)
   : Type extends TypeLambda<[never, never, never, never, never, never], unknown> ?
-    { readonly _tag: Tag } & Pipeable &
+    { readonly _tag: Tag } & ADT &
       (<
         T extends _UpperBound<HKTParams<Type>[0]> = never,
         U extends _UpperBound<HKTParams<Type>[1]> = never,

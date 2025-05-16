@@ -33,11 +33,7 @@ export function make(variants) {
           for (let i = 0; i < args.length; i++) result["_" + i] = args[i];
           return result;
         }, tag),
-        {
-          _tag: tag,
-          toJSON: () => ({ _tag: tag }),
-          [Symbol.for("nodejs.util.inspect.custom")]: () => ({ _tag: tag }),
-        },
+        { _tag: tag },
       ),
       ADTConstructorProto,
     );
@@ -464,10 +460,17 @@ export const PipeableProto = {
   },
 };
 
-const ADTProto = {
-  ...PipeableProto,
-  [Symbol.for("showify.inspect.custom")]: inspect,
-};
+export const PipeableFunctionProto = { ...PipeableProto };
+Object.setPrototypeOf(PipeableFunctionProto, Function.prototype);
 
-const ADTConstructorProto = { ...ADTProto };
-Object.setPrototypeOf(ADTConstructorProto, Function.prototype);
+export const ADTProto = Object.create(PipeableProto);
+ADTProto[Symbol.for("showify.inspect.custom")] = inspect;
+
+export const ADTConstructorProto = Object.create(PipeableFunctionProto);
+ADTConstructorProto.toJSON = function toJSON() {
+  return { _tag: this.tag };
+};
+ADTConstructorProto[Symbol.for("nodejs.util.inspect.custom")] = function inspect() {
+  return { _tag: this.tag };
+};
+ADTConstructorProto[Symbol.for("showify.inspect.custom")] = inspect;

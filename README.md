@@ -597,10 +597,99 @@ import { show } from "showify";
 export function println(...args: unknown[]) {
   console.log(
     ...args.map((arg) =>
-      typeof arg === "string" ? arg : show(arg, { colors: true, trailingComma: "true", indent: 2 }),
+      typeof arg === "string" ? arg : show(arg, { colors: true, trailingComma: "auto", indent: 2 }),
     ),
   );
 }
+```
+
+### Add your own methods to ADTs
+
+> [!WARNING]
+>
+> This feature is not recommended for most users, as it may lead to unexpected behavior while module resolution. Use it at your own risk.
+
+ADTs and ADT constructors in kind-adt use a prototype chain to provide “methods” like `.pipe()`. Due to the nature of how prototypes work in JavaScript, you can add your own methods (or “[monkey patch](https://en.wikipedia.org/wiki/Monkey_patch)”) to ADTs or ADT constructors by modifying the prototype of the ADT or ADT constructor.
+
+kind-adt exports four prototypes for you to use, including the `PipeableProto` mentioned in the [Functional pipelines with `.pipe()`](#functional-pipelines-with-pipe) section:
+
+```typescript
+import {
+  type Pipeable,
+  PipeableProto,
+  type PipeableFunction,
+  PipeableFunctionProto,
+  type ADT,
+  ADTProto,
+  type ADTConstructor,
+  ADTConstructorProto,
+} from "kind-adt";
+```
+
+Each `XxxProto` has a related `Xxx` type, which is the type of the object that can be created from the prototype. ADTs and ADT constructors in kind-adt follow the following prototype chain:
+
+```typescript
+╔══════════════════════════════════╗   ╔════════════╗   ╔═════════════════╗
+║ Concrete ADT (e.g., `Some(...)`) ║ ← ║ `ADTProto` ║ ← ║ `PipeableProto` ║
+╚══════════════════════════════════╝   ╚════════════╝   ╚═════════════════╝
+
+╔═════════════════════════════════════════╗   ╔═══════════════════════╗   ╔═════════════════════════╗
+║ Concrete ADT constructor (e.g., `None`) ║ ← ║ `ADTConstructorProto` ║ ← ║ `PipeableFunctionProto` ║
+╚═════════════════════════════════════════╝   ╚═══════════════════════╝   ╚═════════════════════════╝
+```
+
+Note that though ADTs and ADT constructors share the same `.pipe()` method, they actually have independent prototype chains. This means that you have to patch both prototypes if you want to add your own methods to both ADTs and ADT constructors.
+
+The following example shows how to add a `.println()` method to add ADTs and ADT constructors with type safety. We’ll create a `patches.ts` file to add the method to the prototypes of ADTs and ADT constructors.
+
+```typescript
+// patches.ts
+import { type ADT, ADTProto, type ADTConstructor, ADTConstructorProto } from "kind-adt";
+import { show } from "showify";
+
+/* Make TypeScript aware of the new method with a module augmentation
+   https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation */
+declare module "kind-adt" {
+  interface ADT {
+    println(): void;
+  }
+
+  interface ADTConstructor {
+    println(): void;
+  }
+}
+
+/* Add the method to the ADT prototype */
+ADTProto.println = function println(this: ADT) {
+  console.log(show(this, { colors: true, trailingComma: "auto", indent: 2 }));
+};
+ADTConstructorProto.println = function println(this: ADTConstructor) {
+  console.log(show(this, { colors: true, trailingComma: "auto", indent: 2 }));
+};
+
+/* Ensure TypeScript treats this file as a module */
+export {};
+```
+
+Then you can import the `patches.ts` file in your main file to apply the patches:
+
+```typescript
+import "./patches"; // Import the patches file
+
+import { type Data, make } from "kind-adt";
+
+type Option<T> = Data<{
+  Some: [value: T];
+  None: [];
+}>;
+
+const { Some, None } = make<OptionHKT>();
+interface OptionHKT extends HKT {
+  return: Option<Arg0<this>>;
+}
+
+Some(42).println(); // Prints: Some(42)
+None.println(); // Prints: None
 ```
 
 ## FAQ

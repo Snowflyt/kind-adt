@@ -372,6 +372,25 @@ function inspect({ ancestors, c, level }, expand) {
     body = body.values[2];
   }
 
+  let shouldCollapse = false;
+  let firstFieldNode;
+  if (fields.length === 1) {
+    firstFieldNode = expand(fields[0]);
+    shouldCollapse =
+      firstFieldNode.type === "between" ||
+      (firstFieldNode.type === "variant" &&
+        firstFieldNode.inline.type === "between" &&
+        firstFieldNode.wrap.type === "between") ||
+      (firstFieldNode.type === "sequence" &&
+        firstFieldNode.values.slice(0, -1).every((v) => v.type === "text") &&
+        firstFieldNode.values[firstFieldNode.values.length - 1].type === "between") ||
+      (firstFieldNode.type === "sequence" &&
+        firstFieldNode.values.slice(0, -1).every((v) => v.type === "text") &&
+        firstFieldNode.values[firstFieldNode.values.length - 1].type === "variant" &&
+        firstFieldNode.values[firstFieldNode.values.length - 1].inline.type === "between" &&
+        firstFieldNode.values[firstFieldNode.values.length - 1].wrap.type === "between");
+  }
+
   return (
     fields.length ?
       variant(
@@ -383,17 +402,20 @@ function inspect({ ancestors, c, level }, expand) {
           ...(body.type === "text" ? [text(")")] : [text(") "), body]),
         ]),
         body.type === "text" ?
-          between(
-            fields.map((field) => pair(expand(field), text(","))),
-            text(c.cyan(this._tag) + "("),
-            text(")"),
-          )
-        : pair(
-            between(
+          shouldCollapse ? sequence([text(c.cyan(this._tag) + "("), firstFieldNode, text(")")])
+          : between(
               fields.map((field) => pair(expand(field), text(","))),
               text(c.cyan(this._tag) + "("),
-              text(") "),
-            ),
+              text(")"),
+            )
+        : pair(
+            shouldCollapse ?
+              sequence([text(c.cyan(this._tag) + "("), firstFieldNode, text(") ")])
+            : between(
+                fields.map((field) => pair(expand(field), text(","))),
+                text(c.cyan(this._tag) + "("),
+                text(") "),
+              ),
             body,
           ),
       )

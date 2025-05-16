@@ -242,15 +242,110 @@ describe("show", () => {
       None: [];
     }>;
 
-    const Option = make<OptionHKT>();
+    const { None, Some } = make<OptionHKT>();
     interface OptionHKT extends HKT {
       return: Option<Arg0<this>>;
     }
 
-    expect(show(Option.Some(42))).toBe("Some(42)");
-    expect(show(Option.None)).toBe("None");
-    expect(show(Option.None())).toBe("None");
+    expect(show(Some(42))).toBe("Some(42)");
+    expect(show(None)).toBe("None");
+    expect(show(None())).toBe("None");
 
-    expect(show(Object.assign(Option.None, { value: true }))).toBe("None { value: true }");
+    expect(show(Object.assign(None, { value: true }))).toBe("None { value: true }");
+  });
+
+  it("should collapse one-field ADTs if the field is an object/array/map/set", () => {
+    type Option<T> = Data<{
+      Some: [value: T];
+      None: [];
+    }>;
+
+    const { Some } = make<OptionHKT>();
+    interface OptionHKT extends HKT {
+      return: Option<Arg0<this>>;
+    }
+
+    const obj = {
+      foo: [1, { nested: true }],
+      bar: "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+    };
+
+    expect(show(Some(obj), { indent: 2 })).toEqual(
+      "Some({\n" +
+        "  foo: [1, { nested: true }],\n" +
+        '  bar: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"\n' +
+        "})",
+    );
+    expect(show(Object.assign(Some(obj), { baz: 42 }), { indent: 2 })).toEqual(
+      "Some({\n" +
+        "  foo: [1, { nested: true }],\n" +
+        '  bar: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"\n' +
+        "}) {\n" +
+        "  baz: 42\n" +
+        "}",
+    );
+
+    const arr = [
+      { foo: [1, { nested: true }] },
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+    ];
+
+    expect(show(Some(arr), { indent: 2 })).toEqual(
+      "Some([\n" +
+        "  { foo: [1, { nested: true }] },\n" +
+        '  "Lorem ipsum dolor sit amet, consectetur adipiscing elit"\n' +
+        "])",
+    );
+    expect(show(Object.assign(Some(arr), { baz: 42 }), { indent: 2 })).toEqual(
+      "Some([\n" +
+        "  { foo: [1, { nested: true }] },\n" +
+        '  "Lorem ipsum dolor sit amet, consectetur adipiscing elit"\n' +
+        "]) {\n" +
+        "  baz: 42\n" +
+        "}",
+    );
+
+    const map = new Map<string, any>([
+      ["foo", { bar: [1, { nested: true }] }],
+      ["qux", "Lorem ipsum dolor sit amet, consectetur adipiscing elit"],
+    ]);
+
+    expect(show(Some(map), { indent: 2 })).toEqual(
+      "Some(Map(2) {\n" +
+        '  "foo" => { bar: [1, { nested: true }] },\n' +
+        '  "qux" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit"\n' +
+        "})",
+    );
+    expect(show(Object.assign(Some(map), { baz: 42 }), { indent: 2 })).toEqual(
+      "Some(Map(2) {\n" +
+        '  "foo" => { bar: [1, { nested: true }] },\n' +
+        '  "qux" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit"\n' +
+        "}) {\n" +
+        "  baz: 42\n" +
+        "}",
+    );
+
+    const set = new Set([
+      1,
+      { foo: [1, { nested: true }] },
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+    ]);
+
+    expect(show(Some(set), { indent: 2 })).toEqual(
+      "Some(Set(3) {\n" +
+        "  1,\n" +
+        "  { foo: [1, { nested: true }] },\n" +
+        '  "Lorem ipsum dolor sit amet, consectetur adipiscing elit"\n' +
+        "})",
+    );
+    expect(show(Object.assign(Some(set), { baz: 42 }), { indent: 2 })).toEqual(
+      "Some(Set(3) {\n" +
+        "  1,\n" +
+        "  { foo: [1, { nested: true }] },\n" +
+        '  "Lorem ipsum dolor sit amet, consectetur adipiscing elit"\n' +
+        "}) {\n" +
+        "  baz: 42\n" +
+        "}",
+    );
   });
 });

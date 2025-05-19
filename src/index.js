@@ -468,9 +468,9 @@ ADTProto[Symbol.for("showify.inspect.custom")] = inspect;
 
 export const ADTConstructorProto = Object.create(PipeableFunctionProto);
 ADTConstructorProto.toJSON = function toJSON() {
-  return { _tag: this.tag };
+  return { _tag: this._tag };
 };
 ADTConstructorProto[Symbol.for("nodejs.util.inspect.custom")] = function inspect() {
-  return { _tag: this.tag };
+  return { _tag: this._tag };
 };
 ADTConstructorProto[Symbol.for("showify.inspect.custom")] = inspect;

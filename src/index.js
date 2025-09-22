@@ -460,7 +460,7 @@ export const PipeableProto = {
   },
 };
 
-export const PipeableFunctionProto = { ...PipeableProto };
+export const PipeableFunctionProto = Object.assign({}, PipeableProto);
 Object.setPrototypeOf(PipeableFunctionProto, Function.prototype);
 
 export const ADTProto = Object.create(PipeableProto);

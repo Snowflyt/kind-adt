@@ -1,6 +1,6 @@
 {
   "name": "kind-adt",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "description": "🪴 The kind of ADTs you can count on in TypeScript",
   "keywords": [

@@ -305,6 +305,29 @@ const result = myData.pipe(
 ); // => "84"
 ```
 
+Alternatively, you can import the `Pipeable` constructor, which has its prototype set to `PipeableProto`:
+
+```typescript
+import { Pipeable } from "kind-adt";
+
+class MyData extends Pipeable {
+  constructor(public value: number) {
+    super();
+  }
+}
+
+const data = new MyData(42);
+
+data instanceof Pipeable; // => true
+
+data.pipe(
+  (data) => data.value * 2,
+  (n) => n.toString(),
+); // => "84"
+```
+
+`ADT` is also exported as a constructor with its prototype set to `ADTProto`, which extends `PipeableProto`. See the [Add your own methods to ADTs](#add-your-own-methods-to-adts) section for details.
+
 ### Provide more readable type signatures
 
 Let’s revisit the `Option<T>` example in the quickstart section.

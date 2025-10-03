@@ -115,6 +115,8 @@ export interface Pipeable {
 }
 /** The prototype to build a {@linkcode Pipeable} object. */
 export const PipeableProto: Pipeable;
+/** The constructor with prototype set to {@linkcode PipeableProto}. */
+export const Pipeable: new () => Pipeable;
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export interface PipeableFunction extends Function {
@@ -191,6 +193,8 @@ export const PipeableFunctionProto: PipeableFunction;
 export interface ADT extends Pipeable {}
 /** The prototype of ADTs. */
 export const ADTProto: ADT;
+/** The constructor with prototype set to {@linkcode ADTProto}. */
+export const ADT: new () => ADT;
 
 export interface ADTConstructor extends PipeableFunction {}
 /** The prototype of ADT constructors. */

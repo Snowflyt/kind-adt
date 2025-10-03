@@ -367,6 +367,14 @@ function inspect({ ancestors, c, level }, expand) {
     body.values[2].ref = body.ref;
     body = body.values[2];
   }
+  if (
+    body.type === "sequence" &&
+    body.values.length === 3 &&
+    body.values[0].type === "text" &&
+    body.values[1].value === " "
+  )
+    // Omit class name for class instance
+    body = body.values[2];
 
   let shouldCollapse = false;
   let firstFieldNode;
@@ -459,12 +467,27 @@ export const PipeableProto = {
     }
   },
 };
+export function Pipeable() {}
+Pipeable.prototype = PipeableProto;
+Pipeable.prototype.constructor = Pipeable;
 
 export const PipeableFunctionProto = Object.assign({}, PipeableProto);
 Object.setPrototypeOf(PipeableFunctionProto, Function.prototype);
 
 export const ADTProto = Object.create(PipeableProto);
 ADTProto[Symbol.for("showify.inspect.custom")] = inspect;
+ADTProto[Symbol.for("nodejs.util.inspect.custom")] = function inspect() {
+  return unwrap(this).reduce(
+    (acc, cur, i) => {
+      acc["_" + i] = cur;
+      return acc;
+    },
+    { _tag: this._tag },
+  );
+};
+export function ADT() {}
+ADT.prototype = ADTProto;
+ADT.prototype.constructor = ADT;
 
 export const ADTConstructorProto = Object.create(PipeableFunctionProto);
 ADTConstructorProto.toJSON = function toJSON() {

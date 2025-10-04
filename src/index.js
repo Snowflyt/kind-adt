@@ -344,7 +344,7 @@ const stringify = (value) => {
  * [showify](https://github.com/Snowflyt/showify) package.
  * @returns
  */
-function inspect({ ancestors, c, level }, expand) {
+function inspect({ ancestors, c, level, trailingComma }, expand) {
   const fields = unwrap(this);
   const fieldKeys = fields.map((_, i) => `_${i}`);
 
@@ -381,18 +381,51 @@ function inspect({ ancestors, c, level }, expand) {
   if (fields.length === 1) {
     firstFieldNode = expand(fields[0]);
     shouldCollapse =
-      firstFieldNode.type === "between" ||
+      (firstFieldNode.type === "between" &&
+        !(
+          firstFieldNode.values[0].type === "text" &&
+          firstFieldNode.values[0].value.indexOf("\n") !== -1
+        )) ||
       (firstFieldNode.type === "variant" &&
         firstFieldNode.inline.type === "between" &&
-        firstFieldNode.wrap.type === "between") ||
+        !(
+          firstFieldNode.inline.values[0].type === "text" &&
+          firstFieldNode.inline.values[0].value.indexOf("\n") !== -1
+        ) &&
+        firstFieldNode.wrap.type === "between" &&
+        !(
+          firstFieldNode.wrap.values[0].type === "text" &&
+          firstFieldNode.wrap.values[0].value.indexOf("\n") !== -1
+        )) ||
       (firstFieldNode.type === "sequence" &&
+        !(
+          firstFieldNode.values[0].type === "text" &&
+          firstFieldNode.values[0].value.indexOf("\n") !== -1
+        ) &&
         firstFieldNode.values.slice(0, -1).every((v) => v.type === "text") &&
         firstFieldNode.values[firstFieldNode.values.length - 1].type === "between") ||
       (firstFieldNode.type === "sequence" &&
+        !(
+          firstFieldNode.values[0].type === "text" &&
+          firstFieldNode.values[0].value.indexOf("\n") !== -1
+        ) &&
         firstFieldNode.values.slice(0, -1).every((v) => v.type === "text") &&
         firstFieldNode.values[firstFieldNode.values.length - 1].type === "variant" &&
         firstFieldNode.values[firstFieldNode.values.length - 1].inline.type === "between" &&
-        firstFieldNode.values[firstFieldNode.values.length - 1].wrap.type === "between");
+        !(
+          firstFieldNode.values[firstFieldNode.values.length - 1].inline.values[0].type ===
+            "text" &&
+          firstFieldNode.values[firstFieldNode.values.length - 1].inline.values[0].value.indexOf(
+            "\n",
+          ) !== -1
+        ) &&
+        firstFieldNode.values[firstFieldNode.values.length - 1].wrap.type === "between" &&
+        !(
+          firstFieldNode.values[firstFieldNode.values.length - 1].wrap.values[0].type === "text" &&
+          firstFieldNode.values[firstFieldNode.values.length - 1].wrap.values[0].value.indexOf(
+            "\n",
+          ) !== -1
+        ));
   }
 
   return (
@@ -401,14 +434,20 @@ function inspect({ ancestors, c, level }, expand) {
         sequence([
           text(c.cyan(this._tag) + "("),
           ...flatMap(fields, (field, i, arr) =>
-            i === arr.length - 1 ? expand(field) : [expand(field), text(", ")],
+            i !== arr.length - 1 ? [expand(field), text(", ")]
+            : trailingComma === "always" ? [expand(field), text(",")]
+            : expand(field),
           ),
           ...(body.type === "text" ? [text(")")] : [text(") "), body]),
         ]),
         body.type === "text" ?
           shouldCollapse ? sequence([text(c.cyan(this._tag) + "("), firstFieldNode, text(")")])
           : between(
-              fields.map((field) => pair(expand(field), text(","))),
+              fields.map((field, i, arr) =>
+                trailingComma !== "none" || i !== arr.length - 1 ?
+                  pair(expand(field), text(","))
+                : expand(field),
+              ),
               text(c.cyan(this._tag) + "("),
               text(")"),
             )
@@ -416,7 +455,11 @@ function inspect({ ancestors, c, level }, expand) {
             shouldCollapse ?
               sequence([text(c.cyan(this._tag) + "("), firstFieldNode, text(") ")])
             : between(
-                fields.map((field) => pair(expand(field), text(","))),
+                fields.map((field, i, arr) =>
+                  trailingComma !== "none" || i !== arr.length - 1 ?
+                    pair(expand(field), text(","))
+                  : expand(field),
+                ),
                 text(c.cyan(this._tag) + "("),
                 text(") "),
               ),

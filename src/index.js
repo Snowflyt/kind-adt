@@ -507,33 +507,51 @@ export const PipeableProto = {
     }
   },
 };
-export function Pipeable() {}
-Pipeable.prototype = PipeableProto;
-Pipeable.prototype.constructor = Pipeable;
 
-export const PipeableFunctionProto = Object.assign({}, PipeableProto);
-Object.setPrototypeOf(PipeableFunctionProto, Function.prototype);
+/** @type {*} */
+export const Pipeable = /* @__PURE__ */ (() => {
+  function Pipeable() {}
+  Pipeable.prototype = PipeableProto;
+  Pipeable.prototype.constructor = Pipeable;
+  return Pipeable;
+})();
 
-export const ADTProto = Object.create(PipeableProto);
-ADTProto[Symbol.for("showify.inspect.custom")] = inspect;
-ADTProto[Symbol.for("nodejs.util.inspect.custom")] = function inspect() {
-  return unwrap(this).reduce(
-    (acc, cur, i) => {
-      acc["_" + i] = cur;
-      return acc;
-    },
-    { _tag: this._tag },
-  );
-};
-export function ADT() {}
-ADT.prototype = ADTProto;
-ADT.prototype.constructor = ADT;
+export const PipeableFunctionProto = /* @__PURE__ */ (() => {
+  const PipeableFunctionProto = Object.assign({}, PipeableProto);
+  return Object.setPrototypeOf(PipeableFunctionProto, Function.prototype);
+})();
 
-export const ADTConstructorProto = Object.create(PipeableFunctionProto);
-ADTConstructorProto.toJSON = function toJSON() {
-  return { _tag: this._tag };
-};
-ADTConstructorProto[Symbol.for("nodejs.util.inspect.custom")] = function inspect() {
-  return { _tag: this._tag };
-};
-ADTConstructorProto[Symbol.for("showify.inspect.custom")] = inspect;
+export const ADTProto = /* @__PURE__ */ (() => {
+  const ADTProto = Object.create(PipeableProto);
+  ADTProto[Symbol.for("showify.inspect.custom")] = inspect;
+  ADTProto[Symbol.for("nodejs.util.inspect.custom")] = function inspect() {
+    return unwrap(this).reduce(
+      (acc, cur, i) => {
+        acc["_" + i] = cur;
+        return acc;
+      },
+      { _tag: this._tag },
+    );
+  };
+  return ADTProto;
+})();
+
+/** @type {*} */
+export const ADT = /* @__PURE__ */ (() => {
+  function ADT() {}
+  ADT.prototype = ADTProto;
+  ADT.prototype.constructor = ADT;
+  return ADT;
+})();
+
+export const ADTConstructorProto = /* @__PURE__ */ (() => {
+  const ADTConstructorProto = Object.create(PipeableFunctionProto);
+  ADTConstructorProto.toJSON = function toJSON() {
+    return { _tag: this._tag };
+  };
+  ADTConstructorProto[Symbol.for("nodejs.util.inspect.custom")] = function inspect() {
+    return { _tag: this._tag };
+  };
+  ADTConstructorProto[Symbol.for("showify.inspect.custom")] = inspect;
+  return ADTConstructorProto;
+})();

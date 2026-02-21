@@ -46,10 +46,13 @@ export function make(variants) {
             throw new TypeError(
               `Expected ${variants.map((tag) => "`" + tag + "(...)`").join("/")}, but got \`${stringify(adt)}\``,
             );
-          return entriesOf(adt)
-            .filter(([key]) => key.startsWith("_") && !Object.is(Number(key.slice(1)), NaN))
-            .sort(([a], [b]) => Number(a.slice(1)) - Number(b.slice(1)))
-            .map(([, value]) => value);
+          const result = [];
+          for (const key in adt)
+            if (Object.prototype.hasOwnProperty.call(adt, key))
+              if (key.startsWith("_") && !isNaN(Number(key.slice(1))))
+                // eslint-disable-next-line sonarjs/no-associative-arrays
+                result[key.slice(1)] = adt[key];
+          return result;
         }
       : unwrap,
 
@@ -162,10 +165,13 @@ export function make(variants) {
  * @returns {Array}
  */
 export function unwrap(adt) {
-  return entriesOf(adt)
-    .filter(([key]) => key.startsWith("_") && !Object.is(Number(key.slice(1)), NaN))
-    .sort(([a], [b]) => Number(a.slice(1)) - Number(b.slice(1)))
-    .map(([, value]) => value);
+  const result = [];
+  for (const key in adt)
+    if (Object.prototype.hasOwnProperty.call(adt, key))
+      if (key.startsWith("_") && !isNaN(Number(key.slice(1))))
+        // eslint-disable-next-line sonarjs/no-associative-arrays
+        result[key.slice(1)] = adt[key];
+  return result;
 }
 
 /**
@@ -176,13 +182,13 @@ export function unwrap(adt) {
  * @param {Object<string, Function>} cases The cases to match.
  * @returns {*}
  */
-function _match(adt, cases) {
+const _match = (adt, cases) => {
   if (adt != null && cases[adt._tag]) return cases[adt._tag](...unwrap(adt));
   if (cases._) return cases._(adt);
   throw new Error(
     `No case found for \`${stringify(adt)}\`. Consider adding a catch-all case (\`_\`) if needed`,
   );
-}
+};
 
 /*********************
  * Utility functions *
@@ -205,47 +211,14 @@ function _match(adt, cases) {
  * matchesPrefix("is你好", "is"); // => true
  * ```
  */
-function matchesPrefix(str, prefix) {
-  return (
-    str.startsWith(prefix) &&
-    str.length > prefix.length &&
-    str[prefix.length] === str[prefix.length].toUpperCase()
-  );
-}
+const matchesPrefix = (str, prefix) =>
+  str.startsWith(prefix) &&
+  str.length > prefix.length &&
+  str[prefix.length] === str[prefix.length].toUpperCase();
 
 /****************************
  * Common utility functions *
  ****************************/
-/**
- * A polyfill for `Array#flatMap` to support pre ES2019 environments.
- * @param arr The array to flatten.
- * @param fn The function to call on each element of the array.
- * @returns
- */
-function flatMap(arr, fn) {
-  const result = [];
-  for (let i = 0; i < arr.length; i++) {
-    const value = fn(arr[i], i, arr);
-    if (Array.isArray(value)) Array.prototype.push.apply(result, value);
-    else result.push(value);
-  }
-  return result;
-}
-
-/**
- * Get the entries of an object.
- * @private
- *
- * @param {*} obj The object to get the entries from.
- * @returns {Array}
- */
-function entriesOf(obj) {
-  const entries = [];
-  for (const key in obj)
-    if (Object.prototype.hasOwnProperty.call(obj, key)) entries.push([key, obj[key]]);
-  return entries;
-}
-
 /**
  * Change the name of a function for better debugging experience.
  * @private
@@ -346,7 +319,7 @@ const stringify = (value) => {
  */
 function inspect({ ancestors, c, level, trailingComma }, expand) {
   const fields = unwrap(this);
-  const fieldKeys = fields.map((_, i) => `_${i}`);
+  const fieldKeys = fields.map((_, i) => "_" + i);
 
   let body = expand(this, {
     level,
@@ -430,51 +403,75 @@ function inspect({ ancestors, c, level, trailingComma }, expand) {
 
   return (
     fields.length ?
-      variant(
-        sequence([
-          text(c.cyan(this._tag) + "("),
-          ...flatMap(fields, (field, i, arr) =>
-            i !== arr.length - 1 ? [expand(field), text(", ")]
-            : trailingComma === "always" ? [expand(field), text(",")]
-            : expand(field),
-          ),
-          ...(body.type === "text" ? [text(")")] : [text(") "), body]),
-        ]),
-        body.type === "text" ?
-          shouldCollapse ? sequence([text(c.cyan(this._tag) + "("), firstFieldNode, text(")")])
-          : between(
-              fields.map((field, i, arr) =>
-                trailingComma !== "none" || i !== arr.length - 1 ?
-                  pair(expand(field), text(","))
-                : expand(field),
-              ),
-              text(c.cyan(this._tag) + "("),
-              text(")"),
-            )
-        : pair(
+      {
+        type: "variant",
+        inline: {
+          type: "sequence",
+          values: [
+            { type: "text", value: c.cyan(this._tag) + "(" },
+            ...fields
+              .map((field, i, arr) =>
+                i !== arr.length - 1 ? [expand(field), { type: "text", value: ", " }]
+                : trailingComma === "always" ? [expand(field), { type: "text", value: "," }]
+                : [expand(field)],
+              )
+              .reduce((acc, val) => acc.concat(val), []),
+            ...(body.type === "text" ?
+              [{ type: "text", value: ")" }]
+            : [{ type: "text", value: ") " }, body]),
+          ],
+        },
+        wrap:
+          body.type === "text" ?
             shouldCollapse ?
-              sequence([text(c.cyan(this._tag) + "("), firstFieldNode, text(") ")])
-            : between(
-                fields.map((field, i, arr) =>
+              {
+                type: "sequence",
+                values: [
+                  { type: "text", value: c.cyan(this._tag) + "(" },
+                  firstFieldNode,
+                  { type: "text", value: ")" },
+                ],
+              }
+            : {
+                type: "between",
+                values: fields.map((field, i, arr) =>
                   trailingComma !== "none" || i !== arr.length - 1 ?
-                    pair(expand(field), text(","))
+                    { type: "sequence", values: [expand(field), { type: "text", value: "," }] }
                   : expand(field),
                 ),
-                text(c.cyan(this._tag) + "("),
-                text(") "),
-              ),
-            body,
-          ),
-      )
-    : body.type === "text" ? text(c.cyan(this._tag))
-    : pair(text(c.cyan(this._tag) + " "), body)
+                open: { type: "text", value: c.cyan(this._tag) + "(" },
+                close: { type: "text", value: ")" },
+              }
+          : {
+              type: "sequence",
+              values: [
+                shouldCollapse ?
+                  {
+                    type: "sequence",
+                    values: [
+                      { type: "text", value: c.cyan(this._tag) + "(" },
+                      firstFieldNode,
+                      { type: "text", value: ") " },
+                    ],
+                  }
+                : {
+                    type: "between",
+                    values: fields.map((field, i, arr) =>
+                      trailingComma !== "none" || i !== arr.length - 1 ?
+                        { type: "sequence", values: [expand(field), { type: "text", value: "," }] }
+                      : expand(field),
+                    ),
+                    open: { type: "text", value: c.cyan(this._tag) + "(" },
+                    close: { type: "text", value: ") " },
+                  },
+                body,
+              ],
+            },
+      }
+    : body.type === "text" ? { type: "text", value: c.cyan(this._tag) }
+    : { type: "sequence", values: [{ type: "text", value: c.cyan(this._tag) + " " }, body] }
   );
 }
-const text = (value) => ({ type: "text", value });
-const variant = (inline, wrap) => ({ type: "variant", inline, wrap });
-const sequence = (values) => ({ type: "sequence", values });
-const pair = (left, right) => sequence([left, right]);
-const between = (values, open, close) => ({ type: "between", values, open, close });
 
 export const PipeableProto = {
   pipe(...fs) {

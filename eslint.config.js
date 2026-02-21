@@ -18,7 +18,9 @@ export default defineConfig(
   /** @type {import("eslint").Linter.Config} */ (importX.flatConfigs.recommended),
   /** @type {import("eslint").Linter.Config} */ (importX.flatConfigs.typescript),
   prettierRecommended,
-  sonarjs.configs.recommended,
+  /** @type {import("eslint").Linter.Config} */ (
+    /** @type {NonNullable<typeof sonarjs.configs>} */ (sonarjs.configs).recommended
+  ),
   {
     plugins: {
       "sort-destructure-keys": /** @type {import("eslint").ESLint.Plugin} */ (sortDestructureKeys),

@@ -841,34 +841,18 @@ export interface Matcher<Type extends Tagged> {
 type MatcherOfW<F extends Tagged | TypeLambda<never, Tagged>> =
   [F] extends [Tagged] ?
     {
-      <
-        Cases extends {
-          readonly [Tag in F["_tag"]]: (...args: ExtractFields<FilterTagged<F, Tag>>) => unknown;
-        },
-      >(
-        adt: F,
-        cases: Cases,
-      ): ReturnType<ValueOf<Cases>>;
-      <
-        Cases extends {
-          readonly [Tag in F["_tag"]]?: (...args: ExtractFields<FilterTagged<F, Tag>>) => unknown;
-        } & { _: (adt: F) => unknown },
-      >(
+      <Cases extends MatchWHandlers<F>>(
         adt: F,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        Cases extends {
-          readonly [Tag in F["_tag"]]: (...args: ExtractFields<FilterTagged<F, Tag>>) => unknown;
-        },
-      >(
+      <Cases extends MatchWHandlersPartial<F, unknown> & { _: (adt: F) => unknown }>(
+        adt: F,
         cases: Cases,
-      ): (adt: F) => ReturnType<ValueOf<Cases>>;
-      <
-        Cases extends {
-          readonly [Tag in F["_tag"]]?: (...args: ExtractFields<FilterTagged<F, Tag>>) => unknown;
-        } & { _: (adt: F) => unknown },
-      >(
+      ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
+      <Cases extends MatchWHandlers<F>>(
+        cases: Cases,
+      ): (adt: F) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
+      <Cases extends MatchWHandlersPartial<F, unknown> & { _: (adt: F) => unknown }>(
         cases: Cases,
       ): (adt: F) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
     }
@@ -879,39 +863,21 @@ type MatcherOfW<F extends Tagged | TypeLambda<never, Tagged>> =
 type Matcher1W<F extends TypeLambda<[never], Tagged>> =
   [unknown] extends HKTParams<F> ?
     {
-      <
-        T,
-        R,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
-          ) => unknown;
-        },
-      >(
+      <T, R, Cases extends MatchWHandlers<ApplyHKT<F, [T]>>>(
         adt: ApplyHKT<F, [T]>,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
       <
         T,
         R,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
-          ) => R;
-        } & { _: (adt: ApplyHKT<F, [T]>) => R },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T]>, R> & {
+          _: (adt: ApplyHKT<F, [T]>) => R;
+        },
       >(
         adt: ApplyHKT<F, [T]>,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        R,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
-          ) => unknown;
-        },
-      >(
+      <T, R, Cases extends MatchWHandlers<ApplyHKT<F, [T]>>>(
         cases: Cases,
       ): (
         adt: ApplyHKT<F, [T]>,
@@ -919,11 +885,9 @@ type Matcher1W<F extends TypeLambda<[never], Tagged>> =
       <
         T,
         R,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
-          ) => R;
-        } & { _: (adt: ApplyHKT<F, [T]>) => R },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T]>, R> & {
+          _: (adt: ApplyHKT<F, [T]>) => R;
+        },
       >(
         cases: Cases,
       ): (
@@ -931,47 +895,29 @@ type Matcher1W<F extends TypeLambda<[never], Tagged>> =
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
     }
   : {
-      <
-        T extends HKTParams<F>[0],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
-          ) => unknown;
-        },
-      >(
+      <T extends HKTParams<F>[0], Cases extends MatchWHandlers<ApplyHKT<F, [T]>>>(
         adt: T,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
       <
         T extends HKTParams<F>[0],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
-          ) => unknown;
-        } & { _: (adt: ApplyHKT<F, [T]>) => unknown },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T]>, unknown> & {
+          _: (adt: ApplyHKT<F, [T]>) => unknown;
+        },
       >(
         adt: ApplyHKT<F, [T]>,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T extends HKTParams<F>[0],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
-          ) => unknown;
-        },
-      >(
+      <T extends HKTParams<F>[0], Cases extends MatchWHandlers<ApplyHKT<F, [T]>>>(
         cases: Cases,
       ): (
         adt: ApplyHKT<F, [T]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
       <
         T extends HKTParams<F>[0],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
-          ) => unknown;
-        } & { _: (adt: ApplyHKT<F, [T]>) => unknown },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T]>, unknown> & {
+          _: (adt: ApplyHKT<F, [T]>) => unknown;
+        },
       >(
         cases: Cases,
       ): (
@@ -982,39 +928,21 @@ type Matcher1W<F extends TypeLambda<[never], Tagged>> =
 type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
   [unknown, unknown] extends HKTParams<F> ?
     {
-      <
-        T,
-        U,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        },
-      >(
+      <T, U, Cases extends MatchWHandlers<ApplyHKT<F, [T, U]>>>(
         adt: ApplyHKT<F, [T, U]>,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
       <
         T,
         U,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T, U]>, unknown> & {
+          _: (adt: ApplyHKT<F, [T, U]>) => unknown;
+        },
       >(
         adt: ApplyHKT<F, [T, U]>,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        U,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        },
-      >(
+      <T, U, Cases extends MatchWHandlers<ApplyHKT<F, [T, U]>>>(
         cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
@@ -1022,11 +950,9 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
       <
         T,
         U,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T, U]>, unknown> & {
+          _: (adt: ApplyHKT<F, [T, U]>) => unknown;
+        },
       >(
         cases: Cases,
       ): (
@@ -1035,39 +961,21 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
     }
   : unknown extends HKTParams<F>[0] ?
     {
-      <
-        T,
-        U extends HKTParams<F>[1],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        },
-      >(
+      <T, U extends HKTParams<F>[1], Cases extends MatchWHandlers<ApplyHKT<F, [T, U]>, unknown>>(
         adt: ApplyHKT<F, [T, U]>,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
       <
         T,
         U extends HKTParams<F>[1],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T, U]>, unknown> & {
+          _: (adt: ApplyHKT<F, [T, U]>) => unknown;
+        },
       >(
         adt: ApplyHKT<F, [T, U]>,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        U extends HKTParams<F>[1],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        },
-      >(
+      <T, U extends HKTParams<F>[1], Cases extends MatchWHandlers<ApplyHKT<F, [T, U]>, unknown>>(
         cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
@@ -1075,11 +983,9 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
       <
         T,
         U extends HKTParams<F>[1],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T, U]>, unknown> & {
+          _: (adt: ApplyHKT<F, [T, U]>) => unknown;
+        },
       >(
         cases: Cases,
       ): (
@@ -1088,39 +994,21 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
     }
   : unknown extends HKTParams<F>[1] ?
     {
-      <
-        T extends HKTParams<F>[0],
-        U,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        },
-      >(
+      <T extends HKTParams<F>[0], U, Cases extends MatchWHandlers<ApplyHKT<F, [T, U]>, unknown>>(
         adt: ApplyHKT<F, [T, U]>,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
       <
         T extends HKTParams<F>[0],
         U,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T, U]>, unknown> & {
+          _: (adt: ApplyHKT<F, [T, U]>) => unknown;
+        },
       >(
         adt: ApplyHKT<F, [T, U]>,
         cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T extends HKTParams<F>[0],
-        U,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        },
-      >(
+      <T extends HKTParams<F>[0], U, Cases extends MatchWHandlers<ApplyHKT<F, [T, U]>, unknown>>(
         cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
@@ -1128,11 +1016,9 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
       <
         T extends HKTParams<F>[0],
         U,
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T, U]>, unknown> & {
+          _: (adt: ApplyHKT<F, [T, U]>) => unknown;
+        },
       >(
         cases: Cases,
       ): (
@@ -1143,10 +1029,16 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
       <
         T extends HKTParams<F>[0],
         U extends HKTParams<F>[1],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
+        Cases extends MatchWHandlers<ApplyHKT<F, [T, U]>>,
+      >(
+        adt: ApplyHKT<F, [T, U]>,
+        cases: Cases,
+      ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
+      <
+        T extends HKTParams<F>[0],
+        U extends HKTParams<F>[1],
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T, U]>, unknown> & {
+          _: (adt: ApplyHKT<F, [T, U]>) => unknown;
         },
       >(
         adt: ApplyHKT<F, [T, U]>,
@@ -1155,23 +1047,7 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
       <
         T extends HKTParams<F>[0],
         U extends HKTParams<F>[1],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
-      >(
-        adt: ApplyHKT<F, [T, U]>,
-        cases: Cases,
-      ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T extends HKTParams<F>[0],
-        U extends HKTParams<F>[1],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        },
+        Cases extends MatchWHandlers<ApplyHKT<F, [T, U]>>,
       >(
         cases: Cases,
       ): (
@@ -1180,11 +1056,9 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
       <
         T extends HKTParams<F>[0],
         U extends HKTParams<F>[1],
-        Cases extends {
-          readonly [Tag in Instantiate<F>["_tag"]]?: (
-            ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
-          ) => unknown;
-        } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
+        Cases extends MatchWHandlersPartial<ApplyHKT<F, [T, U]>, unknown> & {
+          _: (adt: ApplyHKT<F, [T, U]>) => unknown;
+        },
       >(
         cases: Cases,
       ): (
@@ -1197,38 +1071,18 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
  * A {@linkcode matchW} function for a specific ADT.
  */
 export interface MatcherW<Type extends Tagged> {
-  <
-    T extends Type,
-    Cases extends {
-      readonly [Tag in Type["_tag"]]: (...args: ExtractFields<FilterTagged<T, Tag>>) => unknown;
-    },
-  >(
-    adt: T,
-    cases: Cases,
-  ): ReturnType<ValueOf<Cases>>;
-  <
-    T extends Type,
-    Cases extends {
-      readonly [Tag in Type["_tag"]]?: (...args: ExtractFields<FilterTagged<T, Tag>>) => unknown;
-    } & { _: (adt: T) => unknown },
-  >(
+  <T extends Type, Cases extends MatchWHandlers<T>>(
     adt: T,
     cases: Cases,
   ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-  <
-    T extends Type,
-    Cases extends {
-      readonly [Tag in Type["_tag"]]: (...args: ExtractFields<FilterTagged<T, Tag>>) => unknown;
-    },
-  >(
+  <T extends Type, Cases extends MatchWHandlersPartial<T, unknown> & { _: (adt: T) => unknown }>(
+    adt: T,
     cases: Cases,
-  ): (adt: T) => ReturnType<ValueOf<Cases>>;
-  <
-    T extends Type,
-    Cases extends {
-      readonly [Tag in Type["_tag"]]?: (...args: ExtractFields<FilterTagged<T, Tag>>) => unknown;
-    } & { _: (adt: T) => unknown },
-  >(
+  ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
+  <T extends Type, Cases extends MatchWHandlers<T>>(
+    cases: Cases,
+  ): (adt: T) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
+  <T extends Type, Cases extends MatchWHandlersPartial<T, unknown> & { _: (adt: T) => unknown }>(
     cases: Cases,
   ): (adt: T) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
 }
@@ -1250,13 +1104,8 @@ type FilterTagged<T, Tag extends string> = Extract<T, { readonly _tag: Tag }>;
 
 /**
  * Extract the fields of a {@linkcode Tagged} as a (possibly) labeled tuple.
- *
- * Exported so declaration emit can name this alias. `matchW` leaves a generic mapped type
- * (`[Tag in ...]`) whose arguments are this alias; TypeScript 7 inlines an unexported alias into
- * that position (including the {@link AddLabels} chain) and then either writes a multi-megabyte
- * `.d.ts` or reports TS7056.
  */
-export type ExtractFields<F> = AddLabels<
+type ExtractFields<F> = AddLabels<
   _ExtractFields<F>,
   F extends (
     Tagged<
@@ -1272,6 +1121,37 @@ type _ExtractFields<F, Counter extends void[] = [], Acc extends unknown[] = []> 
   F extends { readonly [K in `_${Counter["length"]}`]: infer T } ?
     _ExtractFields<F, [...Counter, void], [...Acc, T]>
   : Acc;
+
+/**
+ * Distribute `matchW` handler constraints over a concrete tag union.
+ *
+ * A mapped type `{ [Tag in Tags]: (...args: ExtractFields<...>) => R }` stays generic in
+ * TypeScript 7 declaration emit, which inlines this unexported alias and blows up. Splitting the
+ * union into one object per tag instantiates `ExtractFields` while the tag is a string literal, so
+ * the checker reduces it to a labeled tuple before emit.
+ */
+type UnionToIntersection<U> =
+  (U extends unknown ? (arg: U) => void : never) extends (arg: infer I) => void ? I : never;
+type DistributeMatchW<Tag, T, R> =
+  Tag extends unknown ?
+    Tag extends string ?
+      { readonly [K in Tag]: (...args: ExtractFields<FilterTagged<T, Tag>>) => R }
+    : never
+  : never;
+type DistributeMatchWPartial<Tag, T, R> =
+  Tag extends unknown ?
+    Tag extends string ?
+      { readonly [K in Tag]?: (...args: ExtractFields<FilterTagged<T, Tag>>) => R }
+    : never
+  : never;
+type Collapse<T> = { [K in keyof T]: T[K] };
+type TagOf<T> = T extends { readonly _tag: infer Tag extends string } ? Tag : never;
+type MatchWHandlers<T, R = unknown> = Collapse<
+  UnionToIntersection<DistributeMatchW<TagOf<T>, T, R>>
+>;
+type MatchWHandlersPartial<T, R> = Collapse<
+  UnionToIntersection<DistributeMatchWPartial<TagOf<T>, T, R>>
+>;
 
 /************************
  * Common utility types *

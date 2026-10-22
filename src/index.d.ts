@@ -843,6 +843,8 @@ export interface Matcher<Type extends Tagged> {
  * `Cases extends { [Tag in ...]: ExtractFields<...> }`.
  * TypeScript 7 leaves that mapped constraint unevaluated and inlines `ExtractFields`
  * into declaration emit. A parameter intersection is reduced the same way as `match`.
+ * Partial `_` overloads return `unknown` rather than a shared `R`: an intersection does
+ * not union-infer `R`, which rejected handlers and `_` with different return types.
  */
 type MatcherOfW<F extends Tagged | TypeLambda<never, Tagged>> =
   [F] extends [Tagged] ?

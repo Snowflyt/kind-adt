@@ -838,38 +838,38 @@ export interface Matcher<Type extends Tagged> {
   ): (adt: T) => R;
 }
 
+/**
+ * `matchW` intersects the handler map onto the `cases` parameter instead of writing
+ * `Cases extends { [Tag in ...]: ExtractFields<...> }`.
+ * TypeScript 7 leaves that mapped constraint unevaluated and inlines `ExtractFields`
+ * into declaration emit. A parameter intersection is reduced the same way as `match`.
+ * Partial `_` overloads return `unknown` rather than a shared `R`: an intersection does
+ * not union-infer `R`, which rejected handlers and `_` with different return types.
+ */
 type MatcherOfW<F extends Tagged | TypeLambda<never, Tagged>> =
   [F] extends [Tagged] ?
     {
-      <
-        Cases extends {
+      <Cases extends Record<string, (...args: never) => unknown>>(
+        adt: F,
+        cases: Cases & {
           readonly [Tag in F["_tag"]]: (...args: ExtractFields<FilterTagged<F, Tag>>) => unknown;
         },
-      >(
-        adt: F,
-        cases: Cases,
       ): ReturnType<ValueOf<Cases>>;
-      <
-        Cases extends {
+      <Cases extends Record<string, (...args: never) => unknown>>(
+        adt: F,
+        cases: Cases & {
           readonly [Tag in F["_tag"]]?: (...args: ExtractFields<FilterTagged<F, Tag>>) => unknown;
         } & { _: (adt: F) => unknown },
-      >(
-        adt: F,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        Cases extends {
+      <Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in F["_tag"]]: (...args: ExtractFields<FilterTagged<F, Tag>>) => unknown;
         },
-      >(
-        cases: Cases,
       ): (adt: F) => ReturnType<ValueOf<Cases>>;
-      <
-        Cases extends {
+      <Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in F["_tag"]]?: (...args: ExtractFields<FilterTagged<F, Tag>>) => unknown;
         } & { _: (adt: F) => unknown },
-      >(
-        cases: Cases,
       ): (adt: F) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
     }
   : [F] extends [TypeLambda<[never], Tagged>] ? Matcher1W<F>
@@ -879,101 +879,73 @@ type MatcherOfW<F extends Tagged | TypeLambda<never, Tagged>> =
 type Matcher1W<F extends TypeLambda<[never], Tagged>> =
   [unknown] extends HKTParams<F> ?
     {
-      <
-        T,
-        R,
-        Cases extends {
+      <T, R, Cases extends Record<string, (...args: never) => unknown>>(
+        adt: ApplyHKT<F, [T]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
           ) => unknown;
         },
-      >(
-        adt: ApplyHKT<F, [T]>,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        R,
-        Cases extends {
+      <T, R, Cases extends Record<string, (...args: never) => unknown>>(
+        adt: ApplyHKT<F, [T]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
-          ) => R;
-        } & { _: (adt: ApplyHKT<F, [T]>) => R },
-      >(
-        adt: ApplyHKT<F, [T]>,
-        cases: Cases,
+          ) => unknown;
+        } & { _: (adt: ApplyHKT<F, [T]>) => unknown },
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        R,
-        Cases extends {
+      <T, R, Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
           ) => unknown;
         },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        R,
-        Cases extends {
+      <T, R, Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
-          ) => R;
-        } & { _: (adt: ApplyHKT<F, [T]>) => R },
-      >(
-        cases: Cases,
+          ) => unknown;
+        } & { _: (adt: ApplyHKT<F, [T]>) => unknown },
       ): (
         adt: ApplyHKT<F, [T]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
     }
   : {
-      <
-        T extends HKTParams<F>[0],
-        Cases extends {
+      <T extends HKTParams<F>[0], Cases extends Record<string, (...args: never) => unknown>>(
+        adt: T,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
           ) => unknown;
         },
-      >(
-        adt: T,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T extends HKTParams<F>[0],
-        Cases extends {
+      <T extends HKTParams<F>[0], Cases extends Record<string, (...args: never) => unknown>>(
+        adt: ApplyHKT<F, [T]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
           ) => unknown;
         } & { _: (adt: ApplyHKT<F, [T]>) => unknown },
-      >(
-        adt: ApplyHKT<F, [T]>,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T extends HKTParams<F>[0],
-        Cases extends {
+      <T extends HKTParams<F>[0], Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
           ) => unknown;
         },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T extends HKTParams<F>[0],
-        Cases extends {
+      <T extends HKTParams<F>[0], Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T]>, Tag>>
           ) => unknown;
         } & { _: (adt: ApplyHKT<F, [T]>) => unknown },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
@@ -982,159 +954,111 @@ type Matcher1W<F extends TypeLambda<[never], Tagged>> =
 type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
   [unknown, unknown] extends HKTParams<F> ?
     {
-      <
-        T,
-        U,
-        Cases extends {
+      <T, U, Cases extends Record<string, (...args: never) => unknown>>(
+        adt: ApplyHKT<F, [T, U]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         },
-      >(
-        adt: ApplyHKT<F, [T, U]>,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        U,
-        Cases extends {
+      <T, U, Cases extends Record<string, (...args: never) => unknown>>(
+        adt: ApplyHKT<F, [T, U]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
-      >(
-        adt: ApplyHKT<F, [T, U]>,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        U,
-        Cases extends {
+      <T, U, Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        U,
-        Cases extends {
+      <T, U, Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
     }
   : unknown extends HKTParams<F>[0] ?
     {
-      <
-        T,
-        U extends HKTParams<F>[1],
-        Cases extends {
+      <T, U extends HKTParams<F>[1], Cases extends Record<string, (...args: never) => unknown>>(
+        adt: ApplyHKT<F, [T, U]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         },
-      >(
-        adt: ApplyHKT<F, [T, U]>,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        U extends HKTParams<F>[1],
-        Cases extends {
+      <T, U extends HKTParams<F>[1], Cases extends Record<string, (...args: never) => unknown>>(
+        adt: ApplyHKT<F, [T, U]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
-      >(
-        adt: ApplyHKT<F, [T, U]>,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        U extends HKTParams<F>[1],
-        Cases extends {
+      <T, U extends HKTParams<F>[1], Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T,
-        U extends HKTParams<F>[1],
-        Cases extends {
+      <T, U extends HKTParams<F>[1], Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
     }
   : unknown extends HKTParams<F>[1] ?
     {
-      <
-        T extends HKTParams<F>[0],
-        U,
-        Cases extends {
+      <T extends HKTParams<F>[0], U, Cases extends Record<string, (...args: never) => unknown>>(
+        adt: ApplyHKT<F, [T, U]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         },
-      >(
-        adt: ApplyHKT<F, [T, U]>,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T extends HKTParams<F>[0],
-        U,
-        Cases extends {
+      <T extends HKTParams<F>[0], U, Cases extends Record<string, (...args: never) => unknown>>(
+        adt: ApplyHKT<F, [T, U]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
-      >(
-        adt: ApplyHKT<F, [T, U]>,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T extends HKTParams<F>[0],
-        U,
-        Cases extends {
+      <T extends HKTParams<F>[0], U, Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-      <
-        T extends HKTParams<F>[0],
-        U,
-        Cases extends {
+      <T extends HKTParams<F>[0], U, Cases extends Record<string, (...args: never) => unknown>>(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
@@ -1143,50 +1067,50 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
       <
         T extends HKTParams<F>[0],
         U extends HKTParams<F>[1],
-        Cases extends {
+        Cases extends Record<string, (...args: never) => unknown>,
+      >(
+        adt: ApplyHKT<F, [T, U]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         },
-      >(
-        adt: ApplyHKT<F, [T, U]>,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
       <
         T extends HKTParams<F>[0],
         U extends HKTParams<F>[1],
-        Cases extends {
+        Cases extends Record<string, (...args: never) => unknown>,
+      >(
+        adt: ApplyHKT<F, [T, U]>,
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
-      >(
-        adt: ApplyHKT<F, [T, U]>,
-        cases: Cases,
       ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
       <
         T extends HKTParams<F>[0],
         U extends HKTParams<F>[1],
-        Cases extends {
+        Cases extends Record<string, (...args: never) => unknown>,
+      >(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
       <
         T extends HKTParams<F>[0],
         U extends HKTParams<F>[1],
-        Cases extends {
+        Cases extends Record<string, (...args: never) => unknown>,
+      >(
+        cases: Cases & {
           readonly [Tag in Instantiate<F>["_tag"]]?: (
             ...args: ExtractFields<FilterTagged<ApplyHKT<F, [T, U]>, Tag>>
           ) => unknown;
         } & { _: (adt: ApplyHKT<F, [T, U]>) => unknown },
-      >(
-        cases: Cases,
       ): (
         adt: ApplyHKT<F, [T, U]>,
       ) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
@@ -1197,39 +1121,27 @@ type Matcher2W<F extends TypeLambda<[never, never], Tagged>> =
  * A {@linkcode matchW} function for a specific ADT.
  */
 export interface MatcherW<Type extends Tagged> {
-  <
-    T extends Type,
-    Cases extends {
+  <T extends Type, Cases extends Record<string, (...args: never) => unknown>>(
+    adt: T,
+    cases: Cases & {
       readonly [Tag in Type["_tag"]]: (...args: ExtractFields<FilterTagged<T, Tag>>) => unknown;
     },
-  >(
-    adt: T,
-    cases: Cases,
   ): ReturnType<ValueOf<Cases>>;
-  <
-    T extends Type,
-    Cases extends {
+  <T extends Type, Cases extends Record<string, (...args: never) => unknown>>(
+    adt: T,
+    cases: Cases & {
       readonly [Tag in Type["_tag"]]?: (...args: ExtractFields<FilterTagged<T, Tag>>) => unknown;
     } & { _: (adt: T) => unknown },
-  >(
-    adt: T,
-    cases: Cases,
   ): ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
-  <
-    T extends Type,
-    Cases extends {
+  <T extends Type, Cases extends Record<string, (...args: never) => unknown>>(
+    cases: Cases & {
       readonly [Tag in Type["_tag"]]: (...args: ExtractFields<FilterTagged<T, Tag>>) => unknown;
     },
-  >(
-    cases: Cases,
   ): (adt: T) => ReturnType<ValueOf<Cases>>;
-  <
-    T extends Type,
-    Cases extends {
+  <T extends Type, Cases extends Record<string, (...args: never) => unknown>>(
+    cases: Cases & {
       readonly [Tag in Type["_tag"]]?: (...args: ExtractFields<FilterTagged<T, Tag>>) => unknown;
     } & { _: (adt: T) => unknown },
-  >(
-    cases: Cases,
   ): (adt: T) => ReturnType<Extract<ValueOf<Cases>, (...args: never) => unknown>>;
 }
 

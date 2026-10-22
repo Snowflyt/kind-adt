@@ -1250,8 +1250,13 @@ type FilterTagged<T, Tag extends string> = Extract<T, { readonly _tag: Tag }>;
 
 /**
  * Extract the fields of a {@linkcode Tagged} as a (possibly) labeled tuple.
+ *
+ * Exported so declaration emit can name this alias. `matchW` leaves a generic mapped type
+ * (`[Tag in ...]`) whose arguments are this alias; TypeScript 7 inlines an unexported alias into
+ * that position (including the {@link AddLabels} chain) and then either writes a multi-megabyte
+ * `.d.ts` or reports TS7056.
  */
-type ExtractFields<F> = AddLabels<
+export type ExtractFields<F> = AddLabels<
   _ExtractFields<F>,
   F extends (
     Tagged<
